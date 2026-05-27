@@ -8,7 +8,17 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(gh repo *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(bun --version)",
+      "Bash(npm --version)",
+      "Bash(curl -fsSL https://bun.sh/install)",
+      "Bash(bash)",
+      "Bash(~/.bun/bin/bun *)",
+      "Bash(chmod +x *)",
+      "Bash(echo \"Started PID: $!\")",
+      "Bash(curl -sS http://localhost:4173/ -o /tmp/preview-response.html -w \"HTTP %{http_code} | %{size_download}b\\\\n\")",
+      "Read(//tmp/**)",
+      "Bash(pkill -f \"vite preview\")"
     ]
   }
 }
