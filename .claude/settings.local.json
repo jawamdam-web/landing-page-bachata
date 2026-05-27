@@ -18,7 +18,12 @@
       "Bash(echo \"Started PID: $!\")",
       "Bash(curl -sS http://localhost:4173/ -o /tmp/preview-response.html -w \"HTTP %{http_code} | %{size_download}b\\\\n\")",
       "Read(//tmp/**)",
-      "Bash(pkill -f \"vite preview\")"
+      "Bash(pkill -f \"vite preview\")",
+      "Bash(supabase --version)",
+      "Bash(docker info *)",
+      "Bash(~/.bun/bin/bunx supabase *)",
+      "Bash(VITE_SUPABASE_URL=http://127.0.0.1:54321 VITE_SUPABASE_ANON_KEY=test-anon-key ~/.bun/bin/bun run build)",
+      "Bash(unset VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY)"
     ]
   }
 }
