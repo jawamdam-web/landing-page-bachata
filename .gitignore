@@ -5,3 +5,5 @@ claude-code-zasoby/
 node_modules/
 .env
 .env.local
+compound-engineering-plugin-main/
+.DS_Store
