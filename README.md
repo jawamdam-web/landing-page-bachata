@@ -37,6 +37,43 @@ bun run build
 
 Dev server: <http://localhost:5173>
 
+## Local Supabase setup
+
+Aplikacja używa Supabase (Postgres + Auth + Edge Functions). Do dev wymagany
+jest [Docker Desktop](https://www.docker.com/products/docker-desktop/) — bez
+niego `supabase start` nie uruchomi lokalnego stacku.
+
+Supabase CLI jest zainstalowany jako devDependency (`bunx supabase ...`).
+Opcjonalnie globalnie: `brew install supabase/tap/supabase`.
+
+```bash
+# 1. Uruchom lokalny stack (Postgres + Studio + Auth + Edge runtime)
+bunx supabase start
+# Stack na:
+#   API:    http://127.0.0.1:54321
+#   DB:     postgresql://postgres:postgres@127.0.0.1:54322/postgres
+#   Studio: http://127.0.0.1:54323
+#   Inbucket (e-maile dev): http://127.0.0.1:54324
+
+# 2. Pokaż URL + anon key — skopiuj do .env.local
+bunx supabase status
+
+# 3. Aplikuj migracje na świeżą bazę (drop + replay wszystkich SQL-i)
+bunx supabase db reset
+
+# 4. Po każdej nowej migracji — zregeneruj typy TypeScript
+bun gen-db-types
+# (równoważne: bunx supabase gen types typescript --local > src/lib/database.types.ts)
+
+# 5. Zatrzymaj stack
+bunx supabase stop
+```
+
+**Konwencja RLS:** każda nowa tabela MUSI mieć `ENABLE ROW LEVEL SECURITY`
++ minimum jedną explicit policy. Szczegóły i wzorce w
+[`supabase/migrations/0001_init_baseline.sql`](supabase/migrations/0001_init_baseline.sql)
+(blok komentarzy "KONWENCJA PROJEKTU").
+
 ## Design system
 
 Tokeny (kolory, typografia, spacing, radius, shadow, motion) zdefiniowane
@@ -51,15 +88,23 @@ w `src/global.css` przez dyrektywę `@theme {}` Tailwinda v4.
 ```
 src/
   components/
-    ui/              # shadcn/ui primitives (button, input)
+    ui/                  # shadcn/ui primitives (button, input)
   lib/
-    utils.ts         # cn() helper
+    utils.ts             # cn() helper
+    supabase.ts          # singleton @supabase/supabase-js client (IU-2)
+    database.types.ts    # auto-gen z `bun gen-db-types` (IU-2)
   test/
-    setup.ts         # Vitest + RTL setup
-  App.tsx            # smoke page (IU-1) → landing (IU-5)
-  main.tsx           # entry: RouterProvider + StrictMode
-  router.tsx         # React Router 7 routes
-  global.css         # Tailwind v4 + @theme tokens
+    setup.ts             # Vitest + RTL setup
+  App.tsx                # smoke page (IU-1) → landing (IU-5)
+  main.tsx               # entry: RouterProvider + StrictMode
+  router.tsx             # React Router 7 routes
+  global.css             # Tailwind v4 + @theme tokens
+supabase/
+  config.toml            # lokalny stack (porty 54321/2/3, OAuth)
+  migrations/
+    0001_init_baseline.sql  # extensions + RLS pattern (IU-2)
+scripts/
+  gen-db-types.sh        # wrapper na `supabase gen types`
 ```
 
 ## Plan
