@@ -1,9 +1,36 @@
-claude-code-zasoby/
-
+# macOS / IDE
 .DS_Store
 *.log
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Claude / project-local cache
+claude-code-zasoby/
+compound-engineering-plugin-main/
+
+# Dependencies
 node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+.tmp/
+
+# Env
 .env
 .env.local
-compound-engineering-plugin-main/
-.DS_Store
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Test
+coverage/
+
+# Editor temp
+*.local

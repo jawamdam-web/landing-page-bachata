@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+.husky
+bun.lockb
+package-lock.json
+*.md
+docs/
+.claude/
