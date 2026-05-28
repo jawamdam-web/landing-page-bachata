@@ -47,7 +47,19 @@
       "Bash(git check-ignore *)",
       "Bash(npm i *)",
       "Bash(agent-browser install *)",
-      "Bash(echo \"INSTALL_EXIT=$?\")"
+      "Bash(echo \"INSTALL_EXIT=$?\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\({dependencies:p.dependencies,devDependencies:p.devDependencies,scripts:p.scripts},null,2\\)\\)\")",
+      "Bash(cat components.json)",
+      "Bash(cat .env.example)",
+      "Bash(ls -la bun.lock*)",
+      "Bash(bun add *)",
+      "Bash(agent-browser open *)",
+      "Bash(agent-browser wait *)",
+      "Bash(agent-browser snapshot *)",
+      "Bash(agent-browser fill *)",
+      "Bash(agent-browser click *)",
+      "Bash(agent-browser get *)",
+      "Bash(agent-browser screenshot *)"
     ]
   }
 }
