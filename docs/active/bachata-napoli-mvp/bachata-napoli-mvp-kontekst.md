@@ -1,8 +1,8 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-27
-**Status:** active
+**Ostatnia aktualizacja:** 2026-05-28
+**Status:** active — Faza 1 (Foundation) ✅ ukończona; następna: Faza 2 (Auth + landing)
 
 ## Powiązane pliki
 
@@ -121,6 +121,41 @@
 3. **YT scope verification BLOCKING dla IU-9 public launch** — submit w IU-3 ASAP, monitor status, rozważ invite-only launch jeśli verification w toku.
 4. **RLS test coverage** — każda business table musi mieć RLS-on + minimum 1 policy. Test cross-user access (user A nie widzi B). Brak tego = security review fail.
 5. **Mobile-first UX** — testuj wszystko na 375px (iPhone SE) viewport. Tap targets ≥ 44px. Input font-size ≥ 16px (iOS Safari zoom). Bottom sheet > modal dla mobile actions.
+
+## Log wykonawczy
+
+### Faza 1 — Foundation (2026-05-28) ✅
+
+**IU-1 (feature-builder-fullstack) — completed.** Vite 6 + React 19 + TS 5.7 strict scaffolding. Quality gates: typecheck/lint/test (6/6)/build PASS. Bundle JS gzip ~99 KB (limit 200). Decyzje:
+- **Router: React Router 7** (`createBrowserRouter` data router) zamiast TanStack — prostszy onboarding, brak wymogu type-safe search params w MVP, dominujący w ekosystemie shadcn/ui. TanStack byłby +20KB bez wartości teraz.
+- **ESLint 9 flat config** (`eslint.config.js`) z override dla `src/components/ui/**` (shadcn CVA pattern, wyłączony `react-refresh/only-export-components`).
+- **Vitest 3** (nie 2) — uplift wymuszony konfliktem typów `PluginOption` z Vite 6.
+
+**IU-2 (feature-builder-data) — completed.** Supabase baseline. Quality gates PASS (11/11 testów). Decyzje:
+- **Bez `@supabase/ssr`** — czysty Vite SPA, klient-only.
+- **`private` schema + `is_owner(uuid)` helper** (SECURITY INVOKER, `search_path=''`) jako reusable RLS predicate. `revoke usage from public` = defense in depth (PostgREST nie wywoła).
+- **`main.tsx` NIE ruszany** — lazy import strategy: nic w łańcuchu entry→router→App nie importuje `@/lib/supabase`, więc dev startuje bez `.env.local`. Fail-fast throw odpala się dopiero przy pierwszym konsumencie (IU-4+).
+- **`database.types.ts` = stub** — Docker Desktop niedostępny lokalnie, więc `supabase start/db reset/gen types` nie uruchomione. Migracja `0001` zwalidowana tylko statycznie.
+
+**IU-3 (feature-builder-data) — completed.** 3 operator runbooki + `.env.example`. Brak kodu, brak odchyleń. Quality gates PASS.
+
+### Odchylenia od planu (zalogowane)
+
+1. **`bun.lockb` → `bun.lock`** (IU-1) — Bun 1.3+ używa text lockfile. Funkcjonalnie identyczne, commitowalne.
+2. **Geist via `@fontsource-variable/geist`** (IU-1) zamiast hard-coded `<link rel="preload">` — Vite kontroluje hashed URLs + auto-preload, lepsza cache invalidation. `font-display: swap` wbudowane.
+3. **`tsconfig.app.json` dodany** (IU-1) — separacja typów node (vite.config) od browser (src). Standard Vite scaffold.
+4. **`.eslintrc.json` → `eslint.config.js`** (IU-1) — flat config preferred dla ESLint 9.
+5. **`src/vite-env.d.ts` rozszerzony zamiast `main.tsx`** (IU-2) — `ImportMetaEnv` dla Supabase vars. Zmiana minimalna, w duchu planu.
+6. **IU-2 E2E `window.supabase`** świadomie pominięty — nie eksponujemy klienta w `window` (security). Weryfikacja sesji przejdzie w IU-4 auth flow.
+
+Żadne odchylenie nie zmienia scope ani nie wymaga decyzji usera — wszystkie to merytorycznie uzasadnione wybory implementacyjne w granicach IU.
+
+### Blokery / TODO przeniesione dalej
+
+- **Docker Desktop** wymagany do walidacji Supabase stack na żywo. Następna sesja na maszynie z Dockerem: `bunx supabase start && bunx supabase db reset && bun gen-db-types` → zastąpić stub `database.types.ts` + commit diff.
+- **Krytyczna ścieżka YT scope verification (~2-6 tyg.)** — operator musi rozpocząć Fazę B z `youtube-scope-verification-checklist.md` ASAP (biegnie równolegle z developmentem IU-4..IU-12).
+- **Meta Plan A/B/C** — operator wykonuje pre-flight check (Sekcja 0 `meta-developer-setup.md`) PRZED zleceniem IU-8.
+- **Pre-commit hook fix** — `.husky/pre-commit` dostał `export PATH="$HOME/.bun/bin:$PATH"` (git hook env nie miał `bunx` w PATH).
 
 ## Źródła
 

@@ -1,7 +1,7 @@
 # Bachata Napoli MVP — checklist zadań
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-27
+**Ostatnia aktualizacja:** 2026-05-28
 
 > **Format:** każdy IU zawiera (1) checkboxy implementacyjne, (2) `Test:` z prefiksem typu `[Unit]`/`[E2E]`/`[Manual]`, (3) `Weryfikacja:` (automatyzowalne PASS/FAIL), (4) opcjonalny `Operator:` (kroki wymagające człowieka). `/dev-docs-review` automatycznie odznacza `Weryfikacja:` po PASS — operator checklist NIE jest odznaczany przez autopilota.
 
@@ -11,26 +11,26 @@
 
 ### IU-1: Bootstrap Vite SPA + design tokens + shadcn/ui
 
-**Delegate:** feature-builder-fullstack | **Status:** Pending
+**Delegate:** feature-builder-fullstack | **Status:** ✅ Done (2026-05-28)
 
 **Implementacja:**
-- [ ] Stwórz: `package.json`, `bun.lockb`, `vite.config.ts`, `tsconfig.json`, `tsconfig.node.json`
-- [ ] Stwórz: `index.html` (z preload Geist Variable + meta viewport)
-- [ ] Stwórz: `src/main.tsx`, `src/App.tsx`
-- [ ] Stwórz: `src/global.css` z `@theme {}` (1:1 mapping z `docs/DESIGN.md`)
-- [ ] Stwórz: `src/router.tsx` (TanStack Router lub React Router 7)
-- [ ] Stwórz: `components.json` (shadcn/ui)
-- [ ] Stwórz: `src/lib/utils.ts` (cn helper)
-- [ ] Stwórz: `src/components/ui/button.tsx`, `src/components/ui/input.tsx`
-- [ ] Stwórz: `.gitignore`, `.env.example`, `.eslintrc.json`, `.prettierrc.json`, `README.md`
-- [ ] Stwórz: `.github/workflows/ci.yml`
-- [ ] Stwórz: `src/lib/utils.test.ts`
+- [x] Stwórz: `package.json`, `bun.lock` (text lockfile Bun 1.3+), `vite.config.ts`, `tsconfig.json`, `tsconfig.node.json` (+ `tsconfig.app.json`)
+- [x] Stwórz: `index.html` (Geist Variable via `@fontsource-variable/geist` + meta viewport)
+- [x] Stwórz: `src/main.tsx`, `src/App.tsx`
+- [x] Stwórz: `src/global.css` z `@theme {}` (1:1 mapping z `docs/DESIGN.md`)
+- [x] Stwórz: `src/router.tsx` (React Router 7 — `createBrowserRouter` data router)
+- [x] Stwórz: `components.json` (shadcn/ui, style new-york)
+- [x] Stwórz: `src/lib/utils.ts` (cn helper)
+- [x] Stwórz: `src/components/ui/button.tsx`, `src/components/ui/input.tsx`
+- [x] Stwórz: `.gitignore`, `.env.example`, `eslint.config.js` (flat config ESLint 9), `.prettierrc.json`, `README.md`
+- [x] Stwórz: `.github/workflows/ci.yml`
+- [x] Stwórz: `src/lib/utils.test.ts`
 
 **Test:**
-- [ ] Test: [Unit] `cn()` helper łączy klasy + resolves Tailwind merge conflicts
-- [ ] Test: [E2E] `/` renderuje H1 "Bachata Napoli" z Geist + Button primary z `accent.DEFAULT`
-- [ ] Test: [E2E] DevTools: zero console errors/warnings; Lighthouse Performance > 90 (baseline)
-- [ ] Test: [E2E] `prefers-reduced-motion: reduce` → button hover bez transition
+- [x] Test: [Unit] `cn()` helper łączy klasy + resolves Tailwind merge conflicts (6/6 PASS)
+- [ ] Test: [E2E] `/` renderuje H1 "Bachata Napoli" z Geist + Button primary z `accent.DEFAULT` *(deferred → /dev-docs-review)*
+- [ ] Test: [E2E] DevTools: zero console errors/warnings; Lighthouse Performance > 90 (baseline) *(deferred → /dev-docs-review)*
+- [ ] Test: [E2E] `prefers-reduced-motion: reduce` → button hover bez transition *(deferred → /dev-docs-review)*
 
 **Weryfikacja:**
 - [ ] Weryfikacja: `bun run typecheck` przechodzi bez błędów
@@ -43,23 +43,23 @@
 
 ### IU-2: Supabase init — schema baseline + RLS pattern + client
 
-**Delegate:** feature-builder-data | **Status:** Pending | **Zależy od:** IU-1
+**Delegate:** feature-builder-data | **Status:** ✅ Done (2026-05-28) | **Zależy od:** IU-1
 
 **Implementacja:**
-- [ ] Stwórz: `supabase/config.toml`
-- [ ] Stwórz: `supabase/migrations/0001_init_baseline.sql` (extensions pgcrypto/uuid-ossp + komentarz RLS-on-default)
-- [ ] Stwórz: `src/lib/supabase.ts` (singleton client)
-- [ ] Stwórz: `src/lib/database.types.ts` (auto-gen z `supabase gen types`)
-- [ ] Stwórz: `scripts/gen-db-types.sh`
-- [ ] Modify: `.env.example` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
-- [ ] Modify: `src/main.tsx` (verify client init nie crashuje przy missing env)
-- [ ] Modify: `README.md` (sekcja "Local Supabase setup")
-- [ ] Stwórz: `src/lib/supabase.test.ts`
+- [x] Stwórz: `supabase/config.toml`
+- [x] Stwórz: `supabase/migrations/0001_init_baseline.sql` (extensions pgcrypto/uuid-ossp + `private.is_owner()` helper + komentarz RLS-on-default)
+- [x] Stwórz: `src/lib/supabase.ts` (singleton client)
+- [x] Stwórz: `src/lib/database.types.ts` (stub — regen `bun gen-db-types` po pierwszym `supabase start` z Dockerem)
+- [x] Stwórz: `scripts/gen-db-types.sh`
+- [x] Modify: `.env.example` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` + Google OAuth placeholdery)
+- [x] Modify: `src/vite-env.d.ts` zamiast `main.tsx` — lazy import strategy (nic top-level nie importuje supabase, więc dev nie crashuje przy missing env)
+- [x] Modify: `README.md` (sekcja "Local Supabase setup")
+- [x] Stwórz: `src/lib/supabase.test.ts`
 
 **Test:**
-- [ ] Test: [Unit] `supabase` import zwraca singleton (re-import = ten sam reference)
-- [ ] Test: [Unit] Brak `VITE_SUPABASE_URL` w env → init rzuca jasny error (fail-fast)
-- [ ] Test: [E2E] DevTools: `window.supabase.auth.getSession()` → `{ session: null }` (anon)
+- [x] Test: [Unit] `supabase` import zwraca singleton (re-import = ten sam reference)
+- [x] Test: [Unit] Brak `VITE_SUPABASE_URL` w env → init rzuca jasny error (fail-fast)
+- [ ] Test: [E2E] DevTools: `window.supabase.auth.getSession()` → `{ session: null }` (anon) *(świadomie pominięty — nie eksponujemy supabase w window; weryfikacja w IU-4 auth flow)*
 
 **Weryfikacja:**
 - [ ] Weryfikacja: `supabase start` uruchamia lokalny stack bez błędów
@@ -75,17 +75,17 @@
 
 ### IU-3: GCP + YouTube Data API + Meta Developer setup
 
-**Delegate:** feature-builder-data | **Status:** Pending | **Zależy od:** IU-1, IU-2
+**Delegate:** feature-builder-data | **Status:** ✅ Done (2026-05-28) | **Zależy od:** IU-1, IU-2
 
 **Implementacja:**
-- [ ] Stwórz: `docs/operations/gcp-setup.md` (operator runbook)
-- [ ] Stwórz: `docs/operations/youtube-scope-verification-checklist.md`
-- [ ] Stwórz: `docs/operations/meta-developer-setup.md`
-- [ ] Modify: `.env.example` (`VITE_GOOGLE_OAUTH_CLIENT_ID`, `YOUTUBE_API_KEY`, `META_APP_ID`, `META_APP_SECRET`)
+- [x] Stwórz: `docs/operations/gcp-setup.md` (operator runbook, 297 linii)
+- [x] Stwórz: `docs/operations/youtube-scope-verification-checklist.md` (236 linii, tracking + Plan B/C)
+- [x] Stwórz: `docs/operations/meta-developer-setup.md` (202 linie, pre-flight 2026 + Plan A/B/C)
+- [x] Modify: `.env.example` (`VITE_GOOGLE_OAUTH_CLIENT_ID`, `YOUTUBE_API_KEY`, `META_APP_ID`, `META_APP_SECRET`)
 
 **Test:**
-- [ ] Test: [Manual] Operator uruchamia `gcp-setup.md` step-by-step → kończy z working Client ID + Secret w env staging
-- [ ] Test: [Manual] OAuth basic scopes flow (`openid` + `email`) działa w Supabase Auth Studio testing mode
+- [ ] Test: [Manual] Operator uruchamia `gcp-setup.md` step-by-step → kończy z working Client ID + Secret w env staging *(operator — runbook gotowy, wykonanie po stronie człowieka)*
+- [ ] Test: [Manual] OAuth basic scopes flow (`openid` + `email`) działa w Supabase Auth Studio testing mode *(operator — po wgraniu credentials)*
 
 **Weryfikacja:**
 - [ ] Weryfikacja: `docs/operations/gcp-setup.md` istnieje z checkboxami operator steps

@@ -143,7 +143,7 @@ Kluczowe dokumenty technologiczne (do konsultacji w trakcie wykonania):
 
 ### Faza 1 — Foundation (IU 1–3): Setup, infrastruktura, konta zewnętrzne
 
-- [ ] **Unit 1: Bootstrap Vite SPA + design tokens + shadcn/ui**
+- [x] **Unit 1: Bootstrap Vite SPA + design tokens + shadcn/ui** ✅ (2026-05-28)
 
 **Cel:** Greenfield project scaffolding gotowy do feature work — Vite działa, Tailwind v4 czyta tokeny z DESIGN.md przez `@theme`, shadcn/ui zainicjowany, Geist font ładuje się, routing skeleton, testy + lint + typecheck przechodzą na CI.
 
@@ -200,7 +200,7 @@ Kluczowe dokumenty technologiczne (do konsultacji w trakcie wykonania):
 
 ---
 
-- [ ] **Unit 2: Supabase init — projekt + schema baseline + RLS pattern + client**
+- [x] **Unit 2: Supabase init — projekt + schema baseline + RLS pattern + client** ✅ (2026-05-28)
 
 **Cel:** Lokalny Supabase stack działa, schema baseline (auth wbudowane + przygotowany pattern RLS-on-by-default), Supabase client w aplikacji singleton + types auto-gen.
 
@@ -253,7 +253,7 @@ Kluczowe dokumenty technologiczne (do konsultacji w trakcie wykonania):
 
 ---
 
-- [ ] **Unit 3: GCP + YouTube Data API + Meta Developer + OAuth client setup (operator-heavy)**
+- [x] **Unit 3: GCP + YouTube Data API + Meta Developer + OAuth client setup (operator-heavy)** ✅ (2026-05-28 — kod/docs gotowe; operator checklist w toku)
 
 **Cel:** Wszystkie konta zewnętrzne gotowe + runbooki utworzone + krytyczna ścieżka YT sensitive scope verification ZAPALONA wcześnie.
 
