@@ -23,7 +23,11 @@
       "Bash(docker info *)",
       "Bash(~/.bun/bin/bunx supabase *)",
       "Bash(VITE_SUPABASE_URL=http://127.0.0.1:54321 VITE_SUPABASE_ANON_KEY=test-anon-key ~/.bun/bin/bun run build)",
-      "Bash(unset VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY)"
+      "Bash(unset VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY)",
+      "Bash(git commit *)",
+      "Bash(bun run *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//opt/homebrew/bin/**)"
     ]
   }
 }
