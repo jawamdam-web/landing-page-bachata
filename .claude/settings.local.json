@@ -27,7 +27,14 @@
       "Bash(git commit *)",
       "Bash(bun run *)",
       "Read(//usr/local/bin/**)",
-      "Read(//opt/homebrew/bin/**)"
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//Users/jaro-napoli/.claude/skills/**)",
+      "Read(//Users/jaro-napoli/.claude/skills/agent-browser/**)",
+      "Bash(command -v agent-browser)",
+      "Bash(agent-browser --version)",
+      "Bash(echo \"Installed: $\\(agent-browser --version 2>&1\\)\")",
+      "Bash(curl -sS http://localhost:5173/ -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(pkill -f \"vite\")"
     ]
   }
 }
