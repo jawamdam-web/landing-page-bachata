@@ -34,7 +34,20 @@
       "Bash(agent-browser --version)",
       "Bash(echo \"Installed: $\\(agent-browser --version 2>&1\\)\")",
       "Bash(curl -sS http://localhost:5173/ -w \"\\\\nHTTP %{http_code}\\\\n\")",
-      "Bash(pkill -f \"vite\")"
+      "Bash(pkill -f \"vite\")",
+      "Bash(curl *)",
+      "Bash(awk '/IU-1:/{f=1} f{print} /IU-4:|Faza 2/{if\\(f\\)exit}' \"docs/plans/2026-05-27-001-feat-bachata-napoli-mvp-plan.md\")",
+      "Bash(grep -nE \"^#{1,4} .*IU-[0-9]|^### IU|Implementation Unit|^## Implementation\" \"docs/plans/2026-05-27-001-feat-bachata-napoli-mvp-plan.md\")",
+      "Bash(cd *)",
+      "Bash(git grep *)",
+      "Bash(cat index.html)",
+      "Bash(ls -la supabase/seed.sql)",
+      "Bash(grep -rniE \"font-mono|geist mono|geist-mono|tabular-nums\" src/)",
+      "Bash(cat src/lib/utils.ts)",
+      "Bash(git check-ignore *)",
+      "Bash(npm i *)",
+      "Bash(agent-browser install *)",
+      "Bash(echo \"INSTALL_EXIT=$?\")"
     ]
   }
 }
