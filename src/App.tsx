@@ -1,7 +1,8 @@
-import { Button } from '@/components/ui/button';
+import { Link } from 'react-router';
+import { buttonVariants } from '@/components/ui/button';
 
 /**
- * App — smoke page IU-1.
+ * App — smoke page IU-1 (CTA podpięte do auth w IU-4).
  *
  * Cel: baseline render verification. Demonstruje że:
  * - Tailwind v4 czyta @theme tokens (bg-bg, text-fg, color-accent)
@@ -10,6 +11,8 @@ import { Button } from '@/components/ui/button';
  * - Spacing/typography skala z DESIGN.md działa
  *
  * To NIE jest landing — landing buduje IU-5. To pure smoke page dla scaffoldu.
+ * IU-4 podpiął CTA "Załóż konto" → /signup (Link + buttonVariants) bez
+ * ściągania supabase do eager chain (Link to czysta nawigacja klienta).
  */
 function App() {
   return (
@@ -25,10 +28,15 @@ function App() {
           Twoja biblioteka tańca + spotkania w Lubinie.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-          <Button size="lg">Załóż konto</Button>
-          <Button variant="ghost" size="lg">
-            Dowiedz się więcej
-          </Button>
+          <Link to="/signup" className={buttonVariants({ size: 'lg' })}>
+            Załóż konto
+          </Link>
+          <Link
+            to="/login"
+            className={buttonVariants({ variant: 'ghost', size: 'lg' })}
+          >
+            Zaloguj się
+          </Link>
         </div>
       </div>
     </main>
