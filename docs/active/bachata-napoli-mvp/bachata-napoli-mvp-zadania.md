@@ -28,16 +28,16 @@
 
 **Test:**
 - [x] Test: [Unit] `cn()` helper łączy klasy + resolves Tailwind merge conflicts (6/6 PASS)
-- [ ] Test: [E2E] `/` renderuje H1 "Bachata Napoli" z Geist + Button primary z `accent.DEFAULT` *(deferred → /dev-docs-review)*
-- [ ] Test: [E2E] DevTools: zero console errors/warnings; Lighthouse Performance > 90 (baseline) *(deferred → /dev-docs-review)*
-- [ ] Test: [E2E] `prefers-reduced-motion: reduce` → button hover bez transition *(deferred → /dev-docs-review)*
+- [x] Test: [E2E] `/` renderuje H1 "Bachata Napoli" z Geist + Button primary z `accent.DEFAULT` *(PASS 2026-05-28: H1 lvl1, font-family "Geist Variable", btn bg `oklch(0.62 0.13 38)`)*
+- [ ] Test: [E2E] DevTools: zero console errors/warnings; Lighthouse Performance > 90 (baseline) *(console ✓ zero errors/warnings — tylko Vite HMR debug + React DevTools info; Lighthouse nie uruchomiony)*
+- [x] Test: [E2E] `prefers-reduced-motion: reduce` → button hover bez transition *(PASS 2026-05-28: transition-duration 0.12s → 1e-05s)*
 
 **Weryfikacja:**
-- [ ] Weryfikacja: `bun run typecheck` przechodzi bez błędów
-- [ ] Weryfikacja: `bun run lint` przechodzi bez błędów
-- [ ] Weryfikacja: `bun run test` (Vitest) zielony
-- [ ] Weryfikacja: `bun run build` produkuje `dist/` poniżej 200KB initial bundle
-- [ ] Weryfikacja: Dev server `:5173` renderuje smoke page z brand terracotta accent
+- [x] Weryfikacja: `bun run typecheck` przechodzi bez błędów
+- [x] Weryfikacja: `bun run lint` przechodzi bez błędów
+- [x] Weryfikacja: `bun run test` (Vitest) zielony
+- [x] Weryfikacja: `bun run build` produkuje `dist/` poniżej 200KB initial bundle
+- [x] Weryfikacja: Dev server `:5173` renderuje smoke page z brand terracotta accent (PASS 2026-05-28 via agent-browser na :5174 — terracotta `oklch(0.62 0.13 38)` potwierdzony)
 
 ---
 
@@ -62,10 +62,10 @@
 - [ ] Test: [E2E] DevTools: `window.supabase.auth.getSession()` → `{ session: null }` (anon) *(świadomie pominięty — nie eksponujemy supabase w window; weryfikacja w IU-4 auth flow)*
 
 **Weryfikacja:**
-- [ ] Weryfikacja: `supabase start` uruchamia lokalny stack bez błędów
-- [ ] Weryfikacja: `supabase db reset` aplikuje migrację `0001` bez błędów
-- [ ] Weryfikacja: `bun run typecheck` przechodzi z importem `supabase` z `@/lib/supabase`
-- [ ] Weryfikacja: `bun gen-db-types` produkuje `src/lib/database.types.ts` bez warnings
+- [ ] Weryfikacja: `supabase start` uruchamia lokalny stack bez błędów (SKIP — Docker niedostępny w tej sesji)
+- [ ] Weryfikacja: `supabase db reset` aplikuje migrację `0001` bez błędów (SKIP — Docker niedostępny w tej sesji)
+- [x] Weryfikacja: `bun run typecheck` przechodzi z importem `supabase` z `@/lib/supabase`
+- [ ] Weryfikacja: `bun gen-db-types` produkuje `src/lib/database.types.ts` bez warnings (SKIP — Docker niedostępny w tej sesji)
 
 **Operator:**
 - [ ] Operator: Stworzony Supabase Cloud project `bachatanapoli-staging` w EU (Frankfurt) → URL+anon key do `.env.staging`
@@ -88,9 +88,9 @@
 - [ ] Test: [Manual] OAuth basic scopes flow (`openid` + `email`) działa w Supabase Auth Studio testing mode *(operator — po wgraniu credentials)*
 
 **Weryfikacja:**
-- [ ] Weryfikacja: `docs/operations/gcp-setup.md` istnieje z checkboxami operator steps
-- [ ] Weryfikacja: `docs/operations/youtube-scope-verification-checklist.md` istnieje z tracking sekcjami (Submitted/In Review/Approved)
-- [ ] Weryfikacja: `.env.example` zawiera wszystkie required Google/Meta vars
+- [x] Weryfikacja: `docs/operations/gcp-setup.md` istnieje z checkboxami operator steps
+- [x] Weryfikacja: `docs/operations/youtube-scope-verification-checklist.md` istnieje z tracking sekcjami (Submitted/In Review/Approved)
+- [x] Weryfikacja: `.env.example` zawiera wszystkie required Google/Meta vars
 
 **Operator:**
 - [ ] Operator: Stworzony GCP project `bachatanapoli-prod` + `bachatanapoli-staging`
@@ -103,6 +103,30 @@
 - [ ] Operator: Stworzony Meta App + dodany oEmbed Read product (lub current 2026 alternative)
 - [ ] Operator: Meta App Review submitted jeśli wymagany
 - [ ] Operator: Supabase Auth — Google provider enabled z credentials
+
+---
+
+## Do poprawy po review fazy 1
+
+> Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI — 0× P1, 3× P2 (1 kod + 2 środowiskowe), 11× P3. Pełny raport: `review-faza-1.md`. Faza 1 gotowa do kontynuacji.
+
+**P2 — important:**
+- [x] 🟠 [important] **src/global.css:5** — usunięto nieużywany import `@fontsource-variable/geist-mono` (2026-05-28). Build: 6 mono woff2 → 0, CSS 60.08→58.28 KB. Token `--font-mono` zostawiony. *(dependency `@fontsource-variable/geist-mono` w package.json zostawiona — token sygnalizuje przyszłe użycie; zero kosztu w bundlu, bo nieimportowana)*
+- [x] 🟠 [important] **smoke page live verify** — PASS 2026-05-28 (agent-browser zainstalowany via `bun add -g`): H1+Geist+terracotta ✓, zero console errors/warnings ✓, `prefers-reduced-motion` 0.12s→1e-05s ✓. *(Lighthouse Perf >90 nie uruchomiony — baseline page)*
+- [ ] 🟠 [important] **Supabase local stack** — następna sesja z Dockerem: `bunx supabase start && bunx supabase db reset && bun gen-db-types` → zastąp stub `database.types.ts` + commit.
+
+**P3 — nit (opcjonalne):**
+- [ ] 🟡 [nit] **tsconfig.node.json:21** — usuń phantom reference do `vitest.config.ts`.
+- [ ] 🟡 [nit] **tsconfig.app.json:33** — usuń redundantne globy `include` (zostaw `["src"]`).
+- [ ] 🟡 [nit] **src/lib/supabase.ts:8-12** — watch-item: rozważ eslint `no-restricted-paths` lub `getSupabaseClient()` factory gdy pojawi się pierwszy konsument (IU-4).
+- [ ] 🟡 [nit] **supabase/config.toml:61-65** — `[db.seed] enabled = true` bez `seed.sql` → stwórz pusty `seed.sql` lub `enabled = false`.
+- [ ] 🟡 [nit] **supabase/config.toml:178** — `minimum_password_length` 6→8 + complexity gdy IU-4 włączy email/hasło.
+- [ ] 🟡 [nit] **index.html / hosting** — zaprojektuj CSP + security headers przy IU-5 (pierwsza realna strona).
+- [ ] 🟡 [nit] **config.toml [api] schemas** — checklist Fazy 2: potwierdź że `private` nie trafia do exposed schemas; każda przyszła `SECURITY DEFINER` fn ma `search_path=''`.
+- [ ] 🟡 [nit] **src/lib/supabase.test.ts:44-58** — dodaj `rejects.toBeInstanceOf(Error)` (typed error per §4).
+- [ ] 🟡 [nit] **src/lib/supabase.ts:28** — świadoma decyzja: trim-validate whitespace-only env czy nie.
+- [ ] 🟡 [nit] **src/lib/utils.test.ts** — dodaj test object-syntax `cn({ active: true })`.
+- [ ] 🔵 [sugestia] **src/App.test.tsx** — RTL smoke test (H1 + CTA) pokrywający DOM-część deferred IU-1 E2E.
 
 ---
 

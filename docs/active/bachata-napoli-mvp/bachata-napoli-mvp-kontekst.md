@@ -150,6 +150,16 @@
 
 Żadne odchylenie nie zmienia scope ani nie wymaga decyzji usera — wszystkie to merytorycznie uzasadnione wybory implementacyjne w granicach IU.
 
+### Review Fazy 1 (2026-05-28)
+
+`/dev-docs-review` — 4 agenci (security, performance, TS+architecture, test-coverage) + manualny E2E. **Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI** — 0× P1, 3× P2, 11× P3. Raport: `review-faza-1.md`.
+
+- **CLI na żywo:** typecheck/lint/test (11/11)/build PASS. JS bundle **99.36 KB gzip** (limit 200). `supabase-js` poprawnie tree-shaken.
+- **P2-1 kod RESOLVED:** usunięto nieużywany import `geist-mono` z `global.css:5` (6 woff2 → 0, CSS −1.8 KB). Quality gate zielone po fixie.
+- **P2-2 smoke page RESOLVED:** zainstalowano `agent-browser` (via `bun add -g` — npm `-g` failuje na EACCES `/usr/local`) + live verify na `:5174`: H1+Geist+terracotta `oklch(0.62 0.13 38)` ✓, zero console errors/warnings ✓, `prefers-reduced-motion` 0.12s→1e-05s ✓.
+- **P2-3 Supabase OTWARTE:** stack nie zweryfikowany (Docker niedostępny). Migracja `0001` poprawna statycznie (potwierdzone: `is_owner` SECURITY INVOKER + `search_path=''`, `private` poza PostgREST). Czeka na sesję z Dockerem.
+- **Kluczowy wniosek:** foundation jest czysty i security-conscious — zero `any`, zero sekretów, tsconfig przewyższa plan, testy testują behavior. Wzorzec do utrzymania w IU-4+.
+
 ### Blokery / TODO przeniesione dalej
 
 - **Docker Desktop** wymagany do walidacji Supabase stack na żywo. Następna sesja na maszynie z Dockerem: `bunx supabase start && bunx supabase db reset && bun gen-db-types` → zastąpić stub `database.types.ts` + commit diff.
