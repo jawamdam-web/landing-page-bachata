@@ -130,6 +130,19 @@ function SheetDescription({
   );
 }
 
+function SheetFooter({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="sheet-footer"
+      className={cn(
+        'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 export {
   Sheet,
   SheetTrigger,
@@ -138,4 +151,5 @@ export {
   SheetHeader,
   SheetTitle,
   SheetDescription,
+  SheetFooter,
 };

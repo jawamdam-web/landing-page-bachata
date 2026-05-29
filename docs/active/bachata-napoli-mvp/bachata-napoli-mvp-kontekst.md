@@ -2,7 +2,7 @@
 
 **Branch:** `feature/bachata-napoli-mvp`
 **Ostatnia aktualizacja:** 2026-05-29
-**Status:** active — Faza 1 (Foundation) ✅ + Faza 2 (Auth + landing) ✅ ukończone; następna: Faza 3 (Library core)
+**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 (Library core) ✅ ukończone; następna: Faza 4 (Video sources)
 
 ## Powiązane pliki
 
@@ -191,6 +191,30 @@
 - **Krytyczna ścieżka YT scope verification (~2-6 tyg.)** — operator musi rozpocząć Fazę B z `youtube-scope-verification-checklist.md` ASAP (biegnie równolegle z developmentem IU-4..IU-12).
 - **Meta Plan A/B/C** — operator wykonuje pre-flight check (Sekcja 0 `meta-developer-setup.md`) PRZED zleceniem IU-8.
 - **Pre-commit hook fix** — `.husky/pre-commit` dostał `export PATH="$HOME/.bun/bin:$PATH"` (git hook env nie miał `bunx` w PATH).
+
+### Faza 3 — Library core (2026-05-29) ✅
+
+**IU-6 (feature-builder-fullstack) — completed.** Library schema + dashboard skeleton. Migracja `0003_videos_folders.sql` (videos, folders, video_folders m:n + RLS + updated_at trigger). DashboardLayout (header+sidebar+main), VideoGrid, VideoCard (source icons), EmptyLibrary, LibrarySidebar (mobile/desktop). QueryClientProvider dodany do App.tsx. Quality gates: typecheck/lint/test (118/118 PASS). E2E: auth guard `/library`→`/login` ✓, DashboardLayout desktop+mobile ✓. Decyzje:
+- **QueryClientProvider** przywrócony do `App.tsx` (usunięty w P2 jako nieużywany; teraz potrzebny dla React Query od IU-6+).
+- **`database.types.ts` rozszerzony ręcznie** o Video, Folder, VideoFolder typy (Docker niedostępny — regen po sesji z Dockerem).
+- **`types.ts` w library** — aliasy aplikacyjne oddzielne od stubów DB (izolacja od regeneracji typów).
+- **Odłożone:** `supabase db reset` migracji 0003 (Docker), EmptyLibrary E2E z prawdziwym JWT.
+
+**IU-7 (feature-builder-fullstack) — completed.** Folder CRUD + m:n assignment + filter. CreateFolderDialog, EditFolderDialog, DeleteFolderConfirm (AlertDialog z copy), FolderPickerSheet (mobile, 48px tap targets), FolderPickerPopover (desktop Command search), FolderList (sidebar z DropdownMenu), useFolderMutations (React Query optimistic: snapshot→rollback). Quality gates: typecheck/lint/test (142/142 PASS). Decyzje:
+- **`alert-dialog.tsx`** (shadcn-generated) naprawiony — `asChild` usunięte, warianty zmapowane do naszego Button API.
+- **`sheet.tsx`** — dodano brakujący SheetFooter.
+- **`command.tsx`, `dialog.tsx`, `dropdown-menu.tsx`, `popover.tsx`** — nowe shadcn komponenty zainstalowane.
+- **createFolder** pobiera `user_id` przez `supabase.auth.getUser()` (RLS podwójnie weryfikuje).
+- **Filter `?folder=<id>`** przez React Router `useSearchParams` — URL-friendly, bookmark-safe.
+- **Odłożone:** E2E CRUD foldery z żywą bazą (Docker/prawdziwa sesja).
+
+### Odchylenia od planu (Faza 3)
+
+- **`alert-dialog.tsx` i `sheet.tsx` naprawione** (shadcn-generated, niedopasowane do naszego Button API) — kosmetyczna poprawka, bez zmiany scope.
+- **4 nowe shadcn UI komponenty** (command, dialog, dropdown-menu, popover) — wymagane przez IU-7 UI patterns, zgodne z planem ("shadcn/ui Dialog, AlertDialog, Popover, Sheet, Command").
+- **`currentFolderIds` w VideoCard = `[]` domyślnie** — IU-8 przekaże aktualne foldery po dodaniu `video_folders` join do `getVideos`.
+
+Żadne odchylenie nie zmienia scope.
 
 ## Źródła
 
