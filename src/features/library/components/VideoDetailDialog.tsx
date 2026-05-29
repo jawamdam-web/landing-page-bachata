@@ -15,6 +15,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Share2, Trash2 } from 'lucide-react';
+import { ShareDialog } from '@/features/sharing/components/ShareDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +76,7 @@ interface VideoDetailContentProps {
 function VideoDetailContent({ video, onClose }: VideoDetailContentProps) {
   const [title, setTitle] = useState(video.title);
   const [notes, setNotes] = useState(video.notes ?? '');
+  const [shareOpen, setShareOpen] = useState(false);
   const { mutate: updateVideo } = useUpdateVideo();
   const { mutate: deleteVideoMutate, isPending: isDeleting } = useDeleteVideo();
   const titleRef = useRef<HTMLInputElement>(null);
@@ -149,17 +151,25 @@ function VideoDetailContent({ video, onClose }: VideoDetailContentProps) {
 
       {/* Action buttons */}
       <div className="flex items-center gap-2">
-        {/* Share placeholder (IU-10) */}
+        {/* Share — otwiera ShareDialog (IU-10) */}
         <Button
           variant="outline"
           size="sm"
-          disabled
           className="gap-1.5"
-          title="Wkrótce"
+          onClick={() => setShareOpen(true)}
+          aria-label="Udostępnij film"
         >
           <Share2 className="size-4" strokeWidth={1.75} aria-hidden="true" />
           Udostępnij
         </Button>
+
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          targetType="video"
+          targetId={video.id}
+          targetLabel={video.title}
+        />
 
         {/* Delete */}
         <AlertDialog>

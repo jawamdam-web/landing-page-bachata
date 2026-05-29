@@ -24,6 +24,16 @@ export const router = createBrowserRouter([
     element: <LandingPage />,
   },
   {
+    // Publiczna trasa share tokenu — lazy, bez auth guard.
+    // KLUCZOWE: transytywnie importuje @/lib/supabase przez shareTokens.ts.
+    // Lazy-load trzyma supabase poza eager startup chain (ograniczenie #3).
+    path: '/s/:token',
+    lazy: async () => {
+      const { SharedTokenPage } = await import('./pages/s/[token]');
+      return { Component: SharedTokenPage };
+    },
+  },
+  {
     path: '/login',
     lazy: async () => {
       const { LoginPage } = await import('./pages/login');

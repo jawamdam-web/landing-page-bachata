@@ -14,6 +14,7 @@ import {
   FolderOpen,
   MoreHorizontal,
   Pencil,
+  Share2,
   Trash2,
 } from 'lucide-react';
 import {
@@ -23,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { ShareDialog } from '@/features/sharing/components/ShareDialog';
 import { EditFolderDialog } from './EditFolderDialog';
 import { DeleteFolderConfirm } from './DeleteFolderConfirm';
 import type { Folder } from '../types';
@@ -42,6 +44,7 @@ interface FolderRowProps {
 function FolderRow({ folder, isActive, onSelect }: FolderRowProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const Icon = isActive ? FolderOpen : FolderIcon;
 
   return (
@@ -93,7 +96,7 @@ function FolderRow({ folder, isActive, onSelect }: FolderRowProps) {
               />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem
               onSelect={() => setEditOpen(true)}
               className="gap-2"
@@ -104,6 +107,17 @@ function FolderRow({ folder, isActive, onSelect }: FolderRowProps) {
                 aria-hidden="true"
               />
               Zmień nazwę
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setShareOpen(true)}
+              className="gap-2"
+            >
+              <Share2
+                className="size-4"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+              Udostępnij folder
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => setDeleteOpen(true)}
@@ -130,6 +144,14 @@ function FolderRow({ folder, isActive, onSelect }: FolderRowProps) {
         folder={folder}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
+      />
+
+      <ShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        targetType="folder"
+        targetId={folder.id}
+        targetLabel={folder.name}
       />
     </>
   );

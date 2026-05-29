@@ -177,9 +177,55 @@ export type Database = {
           },
         ];
       };
+      share_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          token: string;
+          target_type: 'video' | 'folder';
+          target_id: string;
+          revoked_at: string | null;
+          created_at: string;
+          last_accessed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          token: string;
+          target_type: 'video' | 'folder';
+          target_id: string;
+          revoked_at?: string | null;
+          created_at?: string;
+          last_accessed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          token?: string;
+          target_type?: 'video' | 'folder';
+          target_id?: string;
+          revoked_at?: string | null;
+          created_at?: string;
+          last_accessed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'share_tokens_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_shared_content: {
+        Args: { p_token: string };
+        Returns: Json;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
