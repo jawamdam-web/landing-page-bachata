@@ -134,3 +134,19 @@ export async function getCurrentSession(): Promise<Session | null> {
   throwIfAuthError(error);
   return data.session;
 }
+
+/**
+ * Subskrybuje zmiany stanu auth (login/logout/refresh). Zwraca funkcję
+ * odsubskrybowującą. Trzyma `supabase.auth.*` w obrębie tej warstwy — wołający
+ * (AuthProvider) nie sięga po klienta bezpośrednio.
+ */
+export function onAuthStateChange(
+  callback: (session: Session | null) => void,
+): () => void {
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session);
+  });
+  return () => subscription.unsubscribe();
+}

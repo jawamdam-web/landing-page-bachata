@@ -99,4 +99,22 @@ describe('AuthProvider + useAuth (bootstrap)', () => {
     });
     expect(screen.getByText('dziecko')).toBeInTheDocument();
   });
+
+  it('odsubskrybowuje onAuthStateChange przy unmount (cleanup §13)', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+
+    const { unmount } = render(
+      <AuthProvider>
+        <span>dziecko</span>
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockOnAuthStateChange).toHaveBeenCalledOnce();
+    });
+
+    unmount();
+
+    expect(mockUnsubscribe).toHaveBeenCalledOnce();
+  });
 });

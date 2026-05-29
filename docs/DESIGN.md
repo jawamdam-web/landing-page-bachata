@@ -30,10 +30,11 @@ brand:
 # =============================================================================
 colors:
   # --- ACCENT (terracotta przygaszony — używane <10% powierzchni)
+  # L=0.55 (nie 0.62): biały tekst na accent = 4.99:1 WCAG 2 AA (review-faza-2 P2-5)
   accent:
-    DEFAULT:         "oklch(0.62 0.13 38)"   # primary CTA bg, focus ring color
-    hover:           "oklch(0.55 0.14 38)"   # CTA hover, active link
-    pressed:         "oklch(0.48 0.14 38)"   # active/pressed state
+    DEFAULT:         "oklch(0.55 0.13 38)"   # primary CTA bg, focus ring color
+    hover:           "oklch(0.48 0.14 38)"   # CTA hover, active link
+    pressed:         "oklch(0.42 0.14 38)"   # active/pressed state
     foreground:      "oklch(0.99 0 0)"       # text/icon on accent bg (white)
     soft:            "oklch(0.96 0.03 38)"   # bg dla banner/badge/highlight
     soft_foreground: "oklch(0.45 0.13 38)"   # tekst na soft + samodzielny link color
@@ -56,7 +57,7 @@ colors:
   border:
     DEFAULT:  "oklch(0.90 0.008 70)"   # divider, default border
     strong:   "oklch(0.82 0.01 70)"    # input border, focused subtle elements
-    focus:    "oklch(0.62 0.13 38)"    # focus ring (lustro accent.DEFAULT)
+    focus:    "oklch(0.55 0.13 38)"    # focus ring (lustro accent.DEFAULT)
     inverse:  "oklch(0.30 0.01 70)"    # border na inverse bg
 
   # --- SEMANTIC (oszczędnie, tylko dla feedback systemowego)
@@ -176,8 +177,8 @@ shadow:
   lg:    "0 10px 15px -3px oklch(0.20 0.01 70 / 0.08), 0 4px 6px -4px oklch(0.20 0.01 70 / 0.04)"
   xl:    "0 20px 25px -5px oklch(0.20 0.01 70 / 0.10), 0 8px 10px -6px oklch(0.20 0.01 70 / 0.04)"
 
-  focus:        "0 0 0 3px oklch(0.62 0.13 38 / 0.32)"   # focus-visible ring
-  focus_inset:  "inset 0 0 0 2px oklch(0.62 0.13 38)"    # focus dla custom inputs
+  focus:        "0 0 0 3px oklch(0.55 0.13 38 / 0.32)"   # focus-visible ring
+  focus_inset:  "inset 0 0 0 2px oklch(0.55 0.13 38)"    # focus dla custom inputs
   hairline:     "inset 0 0 0 1px oklch(0.90 0.008 70)"   # shadow-as-border (image outline)
 
 # =============================================================================
@@ -662,8 +663,8 @@ Tokeny powyżej mapujemy 1:1 na CSS custom properties w `src/global.css` z dyrek
   --color-bg: oklch(0.99 0.004 70);
   --color-bg-subtle: oklch(0.97 0.006 70);
   --color-fg: oklch(0.22 0.01 70);
-  --color-accent: oklch(0.62 0.13 38);
-  --color-accent-hover: oklch(0.55 0.14 38);
+  --color-accent: oklch(0.55 0.13 38);
+  --color-accent-hover: oklch(0.48 0.14 38);
   /* ... reszta z YAML powyżej */
 
   --font-sans: 'Geist', system-ui, sans-serif;
@@ -674,7 +675,7 @@ Tokeny powyżej mapujemy 1:1 na CSS custom properties w `src/global.css` z dyrek
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
 
-  --shadow-focus: 0 0 0 3px oklch(0.62 0.13 38 / 0.32);
+  --shadow-focus: 0 0 0 3px oklch(0.55 0.13 38 / 0.32);
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   /* ... */

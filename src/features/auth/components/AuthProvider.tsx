@@ -10,12 +10,15 @@ import {
  * AuthProvider — trzyma stan sesji i subskrybuje zmiany auth.
  *
  * KLUCZOWE (ograniczenie środowiska #3): NIE importuje `@/lib/supabase` ani
- * `../api/auth` na top-level. Klient Supabase (fail-fast na brak env) jest
- * ładowany dynamicznie WEWNĄTRZ useEffect, więc renderowanie providera w root
+ * `../api/auth` na top-level. Warstwa `../api/auth` (fail-fast na brak env) jest
+ * ładowana dynamicznie WEWNĄTRZ useEffect, więc renderowanie providera w root
  * (main.tsx) nie ściąga supabase do eager startup chain → `bun run dev`
  * bootuje bez `.env.local`. Subskrypcja onAuthStateChange odpala się dopiero
  * po zamontowaniu (client-side), gdzie env już są (lub provider gracefully
  * zostaje w stanie `unauthenticated` jeśli klient nie wstał).
+ *
+ * Cała komunikacja z `supabase.auth.*` idzie przez warstwę `../api/auth`
+ * (getCurrentSession + onAuthStateChange) — provider nie sięga po klienta wprost.
  */
 
 function deriveState(session: Session | null): AuthState {
@@ -41,20 +44,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     let unsubscribe: (() => void) | undefined;
 
     async function bootstrap(): Promise<void> {
-      const { supabase } = await import('@/lib/supabase');
+      const { getCurrentSession, onAuthStateChange } =
+        await import('../api/auth');
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const session = await getCurrentSession();
       if (!active) return;
       setState(deriveState(session));
 
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      unsubscribe = onAuthStateChange((nextSession) => {
         setState(deriveState(nextSession));
       });
-      unsubscribe = () => subscription.unsubscribe();
     }
 
     void bootstrap();

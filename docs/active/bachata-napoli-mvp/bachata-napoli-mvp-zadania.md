@@ -215,6 +215,32 @@
 
 ---
 
+## Do poprawy po review fazy 2
+
+> Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI — 0× P1, 5× P2, 11× P3. Pełny raport: `review-faza-2.md`. Faza 2 gotowa do kontynuacji.
+
+**P2 — important:** ✅ wszystkie naprawione 2026-05-29 (weryfikacja: typecheck/lint/test 82/82/build PASS + axe rendered contrast)
+- [x] 🟠 [important] **src/global.css `@theme` + docs/DESIGN.md** — RESOLVED: accent L 0.62→0.55 (hover 0.48, pressed 0.42, border/shadow-focus 0.55) + usunięto `/85` w FinalCTA subtext. Renderowany kontrast: primary CTA + subtekst **5.02:1** (≥4.5 ✓, axe-formula w przeglądarce). Terracotta głębsza, mood zachowany.
+- [x] 🟠 [important] **src/main.tsx** — RESOLVED: usunięto `QueryClientProvider` (nieużywany do IU-6). react-query **w pełni tree-shaken** (zero chunków); eager JS 135.21→**127.36 KB gzip** (−7.85). Provider wejdzie w IU-6 w layoucie protected routes.
+- [x] 🟠 [important] **src/features/auth/api/auth.ts + AuthProvider.tsx** — RESOLVED: dodano `onAuthStateChange()` do auth.ts; AuthProvider używa `getCurrentSession` + `onAuthStateChange` przez warstwę (zero `supabase.auth.*` bezpośrednio). Lazy import zachowany.
+- [x] 🟠 [important] **src/features/auth/hooks/useAuth.test.tsx** (test) — RESOLVED: dodano test `unmount()` → `mockUnsubscribe` toHaveBeenCalledOnce (cleanup §13 asertowany).
+- [x] 🟠 [important] **src/features/auth/hooks/useRequireAuth.test.tsx** (test) — RESOLVED: nowy plik, 7 testów (unauthenticated→redirect z encoded next, loading→no redirect, authenticated→no redirect+stan, RequireAuth render loader/children/redirect-w-toku).
+
+**P3 — nit (opcjonalne):**
+- [ ] 🟡 [nit] **src/features/auth/components/AuthProvider.tsx:43-60** — `bootstrap()` void bez `.catch` → wieczny loader jeśli import supabase rzuci (§4). `try/catch` + `setState(deriveState(null))`.
+- [ ] 🟡 [nit] **src/features/auth/components/LoginForm.tsx:21-30 + src/pages/auth-callback.tsx:18-25** — duplikat `resolveNextPath` (open-redirect security guard z ryzykiem rozjazdu). Wyciągnąć do shared module + test.
+- [ ] 🟡 [nit] **src/features/auth/api/auth.test.ts** — brak error-case dla `getCurrentSession` i `linkGoogleIdentity` (happy-only, §2).
+- [ ] 🟡 [nit] **ForgotPasswordForm.tsx / ResetPasswordForm.tsx** — brak testów (logika: stały komunikat anti-enumeration + redirect po sukcesie).
+- [ ] 🟡 [nit] **src/features/auth/components/GoogleSignInButton.tsx** — bez własnego testu (error-handling `isPending` reset + toast nietestowane).
+- [ ] 🟡 [nit] **src/components/seo/MetaTags.test.tsx** — brak asercji na `og:description`, `twitter:title/description/image` (test 6 z 9 tagów).
+- [ ] 🟡 [nit] **src/components/layout/PublicHeader.tsx:90-152** — radix Sheet w eager; kandydat na `React.lazy` przy otwarciu menu (gdy eager zbliży się do limitu).
+- [ ] 🟡 [nit] **src/features/landing/components/Reveal.tsx:32-37** — `prefersReducedMotion()` (matchMedia) per-instancja (~8-10×). Policz raz. Mikro-opt.
+- [ ] 🟡 [nit] **src/pages/library/index.tsx:20** — `user.email` (PII) w UI. Informacyjne, bez akcji dla MVP.
+- [ ] 🟡 [nit] **src/features/landing/components/Instructors.tsx:58** — kolejność `rel="noreferrer noopener"` → `noopener noreferrer` (kosmetyka).
+- [ ] 🔵 [sugestia] **deployment** — resetPassword anti-enumeration zależy od rate limiting w Supabase Dashboard → Auth. Potwierdzić przed prod.
+
+---
+
 ## Faza 3 — Library core
 
 ### IU-6: Library schema + dashboard skeleton + empty state

@@ -9,10 +9,12 @@
  * (np. --color-bg → bg-bg, --radius-md → rounded-md).
  * ============================================================================= */
 @theme {
-  /* --- COLOR: ACCENT (terracotta — używane oszczędnie, <10% powierzchni) */
-  --color-accent: oklch(0.62 0.13 38);
-  --color-accent-hover: oklch(0.55 0.14 38);
-  --color-accent-pressed: oklch(0.48 0.14 38);
+  /* --- COLOR: ACCENT (terracotta — używane oszczędnie, <10% powierzchni)
+   * L=0.55 (nie 0.62): biały tekst na accent osiąga WCAG 2 AA 4.99:1 (≥4.5)
+   * na primary CTA. Patrz review-faza-2 P2-5 (axe-core). */
+  --color-accent: oklch(0.55 0.13 38);
+  --color-accent-hover: oklch(0.48 0.14 38);
+  --color-accent-pressed: oklch(0.42 0.14 38);
   --color-accent-foreground: oklch(0.99 0 0);
   --color-accent-soft: oklch(0.96 0.03 38);
   --color-accent-soft-foreground: oklch(0.45 0.13 38);
@@ -32,7 +34,7 @@
   /* --- COLOR: BORDER */
   --color-border: oklch(0.9 0.008 70);
   --color-border-strong: oklch(0.82 0.01 70);
-  --color-border-focus: oklch(0.62 0.13 38);
+  --color-border-focus: oklch(0.55 0.13 38);
   --color-border-inverse: oklch(0.3 0.01 70);
 
   /* --- COLOR: SEMANTIC (feedback) */
@@ -74,8 +76,8 @@
     0 20px 25px -5px oklch(0.2 0.01 70 / 0.1),
     0 8px 10px -6px oklch(0.2 0.01 70 / 0.04);
 
-  --shadow-focus: 0 0 0 3px oklch(0.62 0.13 38 / 0.32);
-  --shadow-focus-inset: inset 0 0 0 2px oklch(0.62 0.13 38);
+  --shadow-focus: 0 0 0 3px oklch(0.55 0.13 38 / 0.32);
+  --shadow-focus-inset: inset 0 0 0 2px oklch(0.55 0.13 38);
   --shadow-hairline: inset 0 0 0 1px oklch(0.9 0.008 70);
 
   /* --- MOTION */

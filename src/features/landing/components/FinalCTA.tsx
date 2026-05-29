@@ -19,7 +19,7 @@ export function FinalCTA() {
           <h2 className="text-2xl font-semibold tracking-[-0.015em] text-accent-foreground text-balance md:text-3xl">
             Zacznij porządkować swoje filmy z zajęć.
           </h2>
-          <p className="mx-auto mt-4 max-w-prose text-lg text-accent-foreground/85 text-pretty">
+          <p className="mx-auto mt-4 max-w-prose text-lg text-accent-foreground text-pretty">
             Załóż darmowe konto i miej swoją bibliotekę tańca zawsze pod ręką.
           </p>
           <div className="mt-8 flex justify-center">
