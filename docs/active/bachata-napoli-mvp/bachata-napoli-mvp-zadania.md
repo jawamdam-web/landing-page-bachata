@@ -272,7 +272,7 @@
 **Weryfikacja:**
 - [x] Weryfikacja: `bun run typecheck` przechodzi
 - [x] Weryfikacja: `bun run test src/features/library` zielony *(118/118 PASS 2026-05-29)*
-- [ ] Weryfikacja: `supabase db reset` aplikuje migrację `0003` bez błędów *(SKIP — Docker niedostępny)*
+- [ ] Weryfikacja: `supabase db reset` aplikuje migrację `0003` bez błędów *(SKIP — Docker niedostępny)* — wymaga operatora (Docker)
 - [x] Weryfikacja: E2E — `/library` renderuje DashboardLayout + auth guard działa *(PASS 2026-05-29)*
 
 ---
@@ -305,7 +305,48 @@
 
 **Weryfikacja:**
 - [x] Weryfikacja: `bun run typecheck` + `bun run lint` + `bun run test` zielone *(142/142 PASS 2026-05-29)*
-- [ ] Weryfikacja: E2E — CRUD folderów + assignment + filter end-to-end *(odłożone — Docker/aktywna sesja DB)*
+- [ ] Weryfikacja: E2E — CRUD folderów + assignment + filter end-to-end *(odłożone — Docker/aktywna sesja DB)* — wymaga operatora (aktywna sesja DB)
+
+---
+
+## Do poprawy po review fazy 3
+
+> Severity gate: ⛔ WYMAGA POPRAWEK — 1× P1, 16× P2, 6× P3. Pełny raport: `review-faza-3.md`.
+
+**P1 — blocking:**
+- [ ] 🔴 [blocking] **src/pages/library/index.tsx:93,105** — `LibrarySidebar` podwójnie instancjonowany: 4 elementy w DOM, 2× DesktopSidebar widoczne na >=lg, split-brain state CreateFolderDialog. Usuń pierwszą instancję z header row.
+
+**P2 — security:**
+- [ ] 🟠 [important] **supabase/migrations/0003_videos_folders.sql:154-158** — video_folders INSERT/DELETE RLS nie weryfikuje `folder_id` ownership. Dodaj `AND folder_id IN (SELECT id FROM public.folders WHERE user_id = (SELECT auth.uid()))` do WITH CHECK.
+- [ ] 🟠 [important] **src/pages/library/index.tsx:54** — `?folder=` param bez walidacji UUID formatu przed przekazaniem do query. Dodaj UUID regex check.
+- [ ] 🟠 [important] **src/pages/library/index.tsx:125** — raw `error.message` z PostgREST renderowany w UI (information disclosure). Zastąp generycznym komunikatem.
+- [ ] 🟠 [important] **src/features/library/api/folders.ts:43** — zbędny `getUser()` + jawny `user_id` w INSERT zamiast polegania na RLS (niespójny wzorzec + extra round-trip). Usuń `getUser()`.
+
+**P2 — architektura/type safety:**
+- [ ] 🟠 [important] **src/components/layout/DashboardLayout.tsx:18** — `QueryClient` na poziomie modułu (module-scope singleton). Przenieś do `useState(() => new QueryClient(...))` wewnątrz komponentu.
+- [ ] 🟠 [important] **src/features/library/api/videos.ts:41** — `as Video[]` cast na JOIN query ukrywa embedded `video_folders` property w runtime. Naprawa: `.map(({ video_folders: _vf, ...video }) => video)`.
+- [ ] 🟠 [important] **src/components/layout/DashboardHeader.tsx:43-44** — unsafe `as string | undefined` na `user_metadata` (Record<string, unknown>). Naprawa: `typeof val === 'string' ? val : undefined`.
+- [ ] 🟠 [important] **src/features/library/api/folders.ts:17 + useFolderMutations.ts:29** — 23505 wykrywane przez `error.message.includes('23505')` zamiast `.code === '23505'` (fragile string-match na undocumented internal). 
+- [ ] 🟠 [important] **src/features/library/components/FolderPickerSheet.tsx:43 + FolderPickerPopover.tsx:47** — stale `useState(currentFolderIds)` bez resync przy ponownym otwarciu. Dodaj `useEffect(() => { if (open) setSelected(currentFolderIds); }, [open, currentFolderIds])`.
+- [ ] 🟠 [important] **src/features/library/components/DeleteFolderConfirm.tsx:34 + FolderPickerSheet.tsx:63 + FolderPickerPopover.tsx:67** — unguarded `mutateAsync` bez try/catch. Dialog/sheet nie zamyka się po błędzie. Dodaj try/catch z finally dla `onOpenChange(false)`.
+
+**P2 — performance:**
+- [ ] 🟠 [important] **src/features/library/components/VideoCard.tsx:115** — `useFolders()` wewnątrz każdego VideoCard = N subscriptions; każda zmiana folderu re-renderuje cały grid. Przenieś `useFolders` do VideoGrid, przekaż `folders` jako prop.
+- [ ] 🟠 [important] **src/features/library/api/folders.ts:125** — zbędny `getVideoFolderIds` round-trip wewnątrz `assignVideoToFolders`; caller zna `currentFolderIds`. Dodaj `currentFolderIds?` jako parametr, pomiń fetch gdy podany.
+- [ ] 🟠 [important] **src/features/library/hooks/useFolderMutations.ts:156** — `useAssignVideoToFolders` nie invaliduje folderów usuniętych z przypisania (film widoczny przez staleTime po usunięciu). Invaliduj unię target ∪ previous folderIds.
+- [ ] 🟠 [important] **src/features/library/api/videos.ts:46** — `select('*')` pobiera `embed_html`/`notes` niepotrzebnie dla list view. Zmień na explicit kolumny (bez embed_html, notes).
+
+**P2 — testy:**
+- [ ] 🟠 [important] **brak test files** — 6 komponentów IU-7 bez testów: FolderList, CreateFolderDialog, EditFolderDialog, DeleteFolderConfirm, FolderPickerSheet, FolderPickerPopover. Hook `useFolders` bez testu. Każdy zawiera niebanalną logikę (walidacja, inline errors, uncommitted state).
+- [ ] 🟠 [important] **src/features/library/api/folders.test.ts** — brak testów dla `removeVideoFromFolder` (zero coverage) + `useAssignVideoToFolders folderIds: []` (usuń ze wszystkich folderów).
+
+**P3 — nit (opcjonalne):**
+- [ ] 🟡 [nit] **src/features/library/api/videos.ts + folders.ts** — `throwIfError` zduplikowany. Wyciągnij do `src/features/library/api/utils.ts`.
+- [ ] 🟡 [nit] **src/features/library/components/VideoCard.tsx:98** — `new Intl.DateTimeFormat(...)` tworzony przy każdym renderze. Wynieś na poziom modułu.
+- [ ] 🟡 [nit] **src/features/library/hooks/useFolderMutations.ts:82,120** — hardcoded `['folders', userId]` literal w rollback zamiast captured `queryKey` const.
+- [ ] 🟡 [nit] **src/features/library/components/VideoCard.tsx** — `currentFolderIds` zawsze `[]` (VideoGrid nie przekazuje). Picker otwiera się z pustymi checkboxami. Powiązane z P2-perf (lift useFolders).
+- [ ] 🟡 [nit] **src/features/library/hooks/useFolderMutations.ts** — `useUpdateFolder` + `useDeleteFolder` bez `onSettled: () => invalidateQueries(...)`. Po błędzie cache może być niespójny.
+- [ ] 🟡 [nit] **src/features/library/components/VideoCard.tsx:157-158** — `<div>` z `onClick`/`onKeyDown` bez `role` attribute (a11y: screen readery nie traktują jako interaktywny).
 
 ---
 

@@ -185,6 +185,17 @@
 - **P2 arch+test (AuthProvider hotspot):** omija granicę auth.ts + cleanup/unsubscribe nieasertowany + brak testu guard `useRequireAuth`/`RequireAuth` (core security R8).
 - **Kluczowy wniosek:** security/architektura/type-safety wzorcowe (RLS poprawne, zero any/as/!, cleanupy §13, zero anty-patternów testowych). Główne długi: 1 realny a11y (kontrast) + testy guard/cleanup + perf eager. Wszystko nie-blokujące.
 
+### Review Fazy 3 (2026-05-29)
+
+`/dev-docs-review` — 5 agentów (security, performance, architecture+TS, test-coverage, E2E browser). **Severity gate: ⛔ WYMAGA POPRAWEK** — 1× P1, 16× P2, 6× P3. Raport: `review-faza-3.md`.
+
+- **P1 (blocking):** `LibrarySidebar` podwójnie instancjonowany w `pages/library/index.tsx` — 4 elementy w DOM, 2× DesktopSidebar widoczne na >=lg, split-brain state dialogów. Wymaga naprawy przed IU-8.
+- **P2 security:** video_folders INSERT RLS bez weryfikacji `folder_id` (najważniejsze — migracja patch), raw error.message w UI, zbędny getUser() w createFolder.
+- **P2 arch/type:** QueryClient module-scope, `as Video[]` na JOIN query, unsafe `as` na user_metadata, 23505 by string-match, stale picker state, unguarded mutateAsync.
+- **P2 perf:** useFolders() w każdym VideoCard (N subscriptions), zbędny round-trip w assignVideoToFolders, brak invalidacji usuniętych folderów, select('*') w list view.
+- **P2 testy:** 6 komponentów IU-7 + hook useFolders bez testów, removeVideoFromFolder bez coverage.
+- **Pozytywne:** zero `any`, RLS na wszystkich tabelach, optimistic updates z rollback, Zod na formularzach.
+
 ### Blokery / TODO przeniesione dalej
 
 - **Docker Desktop** wymagany do walidacji Supabase stack na żywo. Następna sesja na maszynie z Dockerem: `bunx supabase start && bunx supabase db reset && bun gen-db-types` → zastąpić stub `database.types.ts` + commit diff.
