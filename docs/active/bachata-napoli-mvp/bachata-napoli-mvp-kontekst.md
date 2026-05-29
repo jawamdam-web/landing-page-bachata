@@ -1,8 +1,8 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-28
-**Status:** active — Faza 1 (Foundation) ✅ ukończona; następna: Faza 2 (Auth + landing)
+**Ostatnia aktualizacja:** 2026-05-29
+**Status:** active — Faza 1 (Foundation) ✅ + Faza 2 (Auth + landing) ✅ ukończone; następna: Faza 3 (Library core)
 
 ## Powiązane pliki
 
@@ -139,8 +139,23 @@
 
 **IU-3 (feature-builder-data) — completed.** 3 operator runbooki + `.env.example`. Brak kodu, brak odchyleń. Quality gates PASS.
 
+### Faza 2 — Auth + landing (2026-05-29) ✅
+
+**IU-4 (feature-builder-fullstack) — completed.** Supabase Auth: Google OAuth + email/hasło + protected routes. Migracja 0002 (profiles + `handle_new_user` trigger SECURITY DEFINER). Quality gates: typecheck/lint/test (66/66) PASS. E2E (agent-browser): render wszystkich stron auth + guard `/library`→`/login?next` ✓. Decyzje:
+- **RHF + Zod + sonner + React Query** dodane (pinowane wersje §8). `Input` dostał `ref` prop (React 19, bez forwardRef) dla `register()`.
+- **`database.types.ts` ręcznie rozszerzony** o `profiles` (Docker niedostępny — do regen `bun gen-db-types` w sesji z Dockerem).
+- **Email rate limit (`429 over_email_send_rate_limit`)** na żywym backendzie Cloud podczas testów signup — to NIE bug, dowód że backend live i wysyła maile. Happy-path E2E `/login`→`/library` + toast forgot-password odłożone (wymagają potwierdzonego konta / resetu limitu).
+- **Odłożone:** `supabase db reset` migracji 0002 (Docker).
+
+**IU-5 (feature-builder-ui) — completed.** Publiczny landing (`/`): Hero + AboutNapoli + HowItWorks + BachataSocial + Instructors + FinalCTA + PublicHeader (sticky, mobile Sheet) + PublicFooter + MetaTags. Quality gates: typecheck/lint/test (74/74)/build PASS. E2E (agent-browser): desktop 2-col + mobile single-col, zero horizontal scroll, CTA→/signup, smooth scroll, sticky header, meta tagi, smoke a11y ✓. Decyzje:
+- **Route `/`: `App.tsx` smoke page → `pages/index.tsx` (LandingPage, eager).** App.tsx usunięty (martwy kod). Constraint #3 (dev bez `.env.local`) utrzymany — łańcuch landingu nie importuje supabase (`useAuth` czyta tylko kontekst); supabase = osobny lazy chunk (210KB) w buildzie.
+- **`Reveal.tsx`** (poza listą plików planu) — wspólny scroll-reveal IntersectionObserver, respektuje `prefers-reduced-motion`, cleanup §13.
+- **`radix-ui@1.4.3`** (umbrella) przez `shadcn add sheet` — kanoniczne dla nowego registry, funkcjonalnie = react-dialog. `sheet.tsx` przepisany na tokeny DESIGN.md (`bg-bg`/`text-fg-muted`/`z-overlay`).
+- **Odłożone do IU-12:** Lighthouse audit + prerender. **Operator:** prawdziwe foto (hero/instruktorzy) + brandowy `og-image.jpg` (SVG placeholdery — sharp/ImageMagick niedostępne).
+
 ### Odchylenia od planu (zalogowane)
 
+0. **(Faza 2) Placeholdery `.svg` zamiast `.jpg`** (IU-5) — brak sharp/ImageMagick. Gradient brand-palette, lekkie. Operator dostarczy JPEG przed publikacją. **`Reveal.tsx`** dodany poza listą plików (shared observer, §3). **`radix-ui` umbrella** zamiast `@radix-ui/react-dialog` (shadcn registry default). Żadne nie zmienia scope.
 1. **`bun.lockb` → `bun.lock`** (IU-1) — Bun 1.3+ używa text lockfile. Funkcjonalnie identyczne, commitowalne.
 2. **Geist via `@fontsource-variable/geist`** (IU-1) zamiast hard-coded `<link rel="preload">` — Vite kontroluje hashed URLs + auto-preload, lepsza cache invalidation. `font-display: swap` wbudowane.
 3. **`tsconfig.app.json` dodany** (IU-1) — separacja typów node (vite.config) od browser (src). Standard Vite scaffold.

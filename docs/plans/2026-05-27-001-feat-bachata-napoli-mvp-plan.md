@@ -322,7 +322,7 @@ Kluczowe dokumenty technologiczne (do konsultacji w trakcie wykonania):
 
 ### Faza 2 — Auth + landing (IU 4–5): Pierwsze touch-pointy z userem
 
-- [ ] **Unit 4: Supabase Auth — Google OAuth + email/hasło + account linking + protected routes**
+- [x] **Unit 4: Supabase Auth — Google OAuth + email/hasło + account linking + protected routes**
 
 **Cel:** User może się zarejestrować i zalogować obiema metodami; identyfikatory można linkować; protected routes działają; profile auto-creation via DB trigger.
 
@@ -401,7 +401,7 @@ Kluczowe dokumenty technologiczne (do konsultacji w trakcie wykonania):
 
 ---
 
-- [ ] **Unit 5: Public landing page — wszystkie sekcje (R1–R6) + SEO meta + mobile responsive**
+- [x] **Unit 5: Public landing page — wszystkie sekcje (R1–R6) + SEO meta + mobile responsive**
 
 **Cel:** Pierwsze publiczne wrażenie. 5–6 sekcji editorial layout, hero z foto, CTA prowadzące do `/signup`, w pełni responsive (mobile-first), gotowe meta tagi dla SEO + social sharing.
 

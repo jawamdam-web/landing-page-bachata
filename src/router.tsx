@@ -1,25 +1,27 @@
 import { createBrowserRouter } from 'react-router';
-import App from './App';
+import LandingPage from './pages/index';
 
 /**
  * Router — React Router 7 (`createBrowserRouter` data router).
  *
  * Trasy:
- *   /                — smoke page (App). IU-5 zastąpi landingiem. NIE ruszamy.
+ *   /                — publiczny landing (LandingPage, IU-5). EAGER (LCP + SEO
+ *                      critical). Łańcuch importów `/` NIE ściąga supabase ani
+ *                      api/auth — useAuth w PublicHeader czyta tylko kontekst.
  *   /login, /signup, /forgot-password, /reset-password, /auth-callback — auth.
  *   /library         — protected (RequireAuth guard). Placeholder; IU-6 rozbuduje.
  *
  * KLUCZOWE (ograniczenie środowiska #3): wszystkie trasy auth + /library
  * używają route-level `lazy` (dynamic import). Strony te transytywnie importują
  * `@/lib/supabase` (fail-fast na brak env), więc lazy-load trzyma supabase POZA
- * eager startup chain (main.tsx → router.tsx → App). `bun run dev` bootuje i
- * renderuje `/` bez `.env.local`. Supabase ładuje się dopiero przy wejściu na
- * trasę auth/protected (klient-side, gdzie env już są).
+ * eager startup chain (main.tsx → router.tsx → LandingPage). `bun run dev`
+ * bootuje i renderuje `/` bez `.env.local`. Supabase ładuje się dopiero przy
+ * wejściu na trasę auth/protected (klient-side, gdzie env już są).
  */
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <LandingPage />,
   },
   {
     path: '/login',

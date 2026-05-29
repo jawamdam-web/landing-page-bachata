@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="Placeholder portretu instruktora">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0e9dd"/>
+      <stop offset="1" stop-color="#ddccb8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#g)"/>
+  <circle cx="600" cy="370" r="150" fill="#c2916e" opacity="0.55"/>
+  <path d="M340 760 Q600 540 860 760 L860 900 L340 900 Z" fill="#c2916e" opacity="0.55"/>
+  <text x="50%" y="92%" text-anchor="middle" fill="#5a4636" font-family="system-ui, sans-serif" font-size="26" font-weight="500" letter-spacing="2" opacity="0.7">INSTRUKTOR</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Bachata Napoli — biblioteka tańca i spotkania w Lubinie">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbf8f3"/>
+      <stop offset="1" stop-color="#f0e7d9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <circle cx="1000" cy="150" r="220" fill="#c06a4b" opacity="0.14"/>
+  <circle cx="1080" cy="520" r="120" fill="#c06a4b" opacity="0.1"/>
+  <text x="96" y="240" fill="#c06a4b" font-family="system-ui, sans-serif" font-size="26" font-weight="600" letter-spacing="4">BACHATA NAPOLI</text>
+  <text x="96" y="330" fill="#2e2a26" font-family="system-ui, sans-serif" font-size="64" font-weight="600" letter-spacing="-1">Twoja biblioteka tańca</text>
+  <text x="96" y="408" fill="#2e2a26" font-family="system-ui, sans-serif" font-size="64" font-weight="600" letter-spacing="-1">+ spotkania w Lubinie</text>
+  <text x="96" y="476" fill="#6b5d4f" font-family="system-ui, sans-serif" font-size="28" font-weight="400">Zapisuj filmy z zajęć. Tańcz lokalnie.</text>
+</svg>
