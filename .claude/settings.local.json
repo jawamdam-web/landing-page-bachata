@@ -89,7 +89,11 @@
       "Bash(echo \"Hero 'Załóż konto' → URL: $\\(agent-browser get url 2>&1\\)\")",
       "Bash(agent-browser close *)",
       "Bash(pkill -f vite)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(grep -rniE \"service_role|sk_live|sk_test|eyJ[A-Za-z0-9_-]{20,}|SUPABASE_SERVICE|secret_key\" src/ supabase/ public/)",
+      "Bash(cat src/lib/supabase.ts)",
+      "Bash(agent-browser scroll *)",
+      "Bash(grep -n \"Operator: \\\\`og-image.jpg\\\\` brand version\\\\|## Faza 3 — Library core\" docs/active/bachata-napoli-mvp/bachata-napoli-mvp-zadania.md)"
     ]
   }
 }
