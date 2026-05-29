@@ -448,18 +448,18 @@
 
 ## Do poprawy po review fazy 4
 
-> Severity gate: ⛔ WYMAGA POPRAWEK — 1× P1, 6× P2, 10× P3. Pełny raport: `review-faza-4.md`.
+> Severity gate: ⛔ WYMAGA POPRAWEK — 1× P1, 6× P2, 10× P3. Pełny raport: `review-faza-4.md`. ✅ P1+P2 naprawione 2026-05-30 (306/306 PASS).
 
 **P1 — blocking:**
-- [ ] 🔴 [blocking] **src/lib/dompurify-wrapper.ts** — `sanitizeEmbedHtml` nie ma żadnych testów. Jedyna ochrona XSS przed `dangerouslySetInnerHTML`. Wymagane testy: valid oEmbed HTML → zachowuje iframe; `<script>` → usunięty; `onerror` attr → usunięty; `javascript:` href → usunięty; pusty string → `''`.
+- [x] 🔴 [blocking] **src/lib/dompurify-wrapper.ts** — `sanitizeEmbedHtml` nie ma żadnych testów. Jedyna ochrona XSS przed `dangerouslySetInnerHTML`. Wymagane testy: valid oEmbed HTML → zachowuje iframe; `<script>` → usunięty; `onerror` attr → usunięty; `javascript:` href → usunięty; pusty string → `''`. *(RESOLVED 2026-05-30: 6 testów w `dompurify-wrapper.test.ts`)*
 
 **P2 — important:**
-- [ ] 🟠 [important] **src/features/library/components/VideoPlayer.tsx** — brak testów renderowania per source type (YT iframe, meta_embed dangerouslySetInnerHTML, fallback "Brak ID", fallback "Podgląd niedostępny").
-- [ ] 🟠 [important] **src/features/library/components/VideoDetailDialog.tsx** — brak testów: inline edit tytułu + blur → updateVideo; klik "Usuń" → AlertDialog → deleteVideo + onClose; "Anuluj" → dialog zamknięty bez delete.
-- [ ] 🟠 [important] **src/features/library/components/YoutubeLinkForm.tsx + MetaLinkForm.tsx** — brak testów formularzy (invalid URL → error inline, valid URL → submit + pending state).
-- [ ] 🟠 [important] **src/features/library/api/videos.test.ts** — brak bezpośrednich testów `createVideoFromUpload` (INSERT z source='youtube_upload', brak session → rzuca, Supabase error → rzuca).
-- [ ] 🟠 [important] **supabase/functions/fetch-youtube-metadata/index.test.ts** — cache hit → zero call do YT API nie jest przetestowany (Cache API niedostępna w Vitest). Dodaj TODO z notatką o limitacji Deno lub mock `caches`.
-- [ ] 🟠 [important] **supabase/functions/fetch-youtube-metadata/index.test.ts** — scenariusz "fake ID → 404" pokryty tylko pośrednio. Dodaj test mapowania `items: []` → `jsonError('not_found', ..., 404)`.
+- [x] 🟠 [important] **src/features/library/components/VideoPlayer.tsx** — brak testów renderowania per source type. *(RESOLVED 2026-05-30: 5 testów w `VideoPlayer.test.tsx`)*
+- [x] 🟠 [important] **src/features/library/components/VideoDetailDialog.tsx** — brak testów edit + delete flow. *(RESOLVED 2026-05-30: 6 testów w `VideoDetailDialog.test.tsx`)*
+- [x] 🟠 [important] **src/features/library/components/YoutubeLinkForm.tsx + MetaLinkForm.tsx** — brak testów formularzy. *(RESOLVED 2026-05-30: 5+5 testów w `YoutubeLinkForm.test.tsx` + `MetaLinkForm.test.tsx`)*
+- [x] 🟠 [important] **src/features/library/api/videos.test.ts** — brak bezpośrednich testów `createVideoFromUpload`. *(RESOLVED 2026-05-30: +3 testy)*
+- [x] 🟠 [important] **supabase/functions/fetch-youtube-metadata/index.test.ts** — cache hit → zero call do YT API nie jest przetestowany. *(RESOLVED 2026-05-30: dodano TODO z notatką o limitacji Deno Cache API)*
+- [x] 🟠 [important] **supabase/functions/fetch-youtube-metadata/index.test.ts** — scenariusz "fake ID → 404" pokryty tylko pośrednio. *(RESOLVED 2026-05-30: test już istniał — potwierdzono pokrycie)*
 
 **P3 — nit (opcjonalne):**
 - [ ] 🟡 [nit] **src/lib/dompurify-wrapper.ts:33** — `'style'` w ALLOWED_ATTR umożliwia CSS-based data exfiltration. Rozważ usunięcie jeśli FB/IG oEmbed HTML nie wymaga inline styles.

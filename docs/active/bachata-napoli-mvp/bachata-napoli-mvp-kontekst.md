@@ -1,7 +1,7 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-29 (Faza 4 done)
+**Ostatnia aktualizacja:** 2026-05-30 (poprawy P1+P2 po review Fazy 4)
 **Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ ukończone; następna: Faza 5 (Sharing + launch)
 
 ## Powiązane pliki

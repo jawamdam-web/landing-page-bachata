@@ -131,3 +131,16 @@ describe('Mapowanie odpowiedzi YouTube API', () => {
     expect(isPrivate).toBe(true);
   });
 });
+
+// TODO: cache hit nie jest przetestowany
+//
+// Przyczyna: Deno Cache API (`caches.open`, `caches.match`, `cache.put`) nie jest
+// dostępna w środowisku Vitest/jsdom (Node.js). Próba mockowania `caches` globalnie
+// jest krucha i nie odzwierciedla realnego zachowania runtime'u.
+//
+// Plan testowania (gdy potrzebne):
+// 1. Uruchom funkcję w środowisku Deno (np. `deno test` lub Supabase local functions serve).
+// 2. Alternatywnie: wyekstrahuj logikę cache do osobnego helpera i wstrzyknij
+//    zależność (dependency injection) — możesz wtedy przekazać mock `caches`-like object.
+// 3. W Vitest: `vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue({ match: ..., put: ... }) })`
+//    zadziała jako smoke test, ale nie gwarantuje poprawności cache key/TTL logiki.

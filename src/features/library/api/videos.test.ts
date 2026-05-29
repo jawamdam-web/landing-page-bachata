@@ -64,6 +64,7 @@ vi.stubGlobal('fetch', mockFetch);
 
 import {
   createVideoFromMetaLink,
+  createVideoFromUpload,
   createVideoFromYoutubeLink,
   deleteVideo,
   getVideoById,
@@ -501,5 +502,72 @@ describe('isDuplicateVideoError', () => {
 
   it('zwraca false dla zwykłego Error bez code', () => {
     expect(isDuplicateVideoError(new Error('fail'))).toBe(false);
+  });
+});
+
+// ─── IU-9: createVideoFromUpload ─────────────────────────────────────────────
+
+describe('createVideoFromUpload', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('happy path: wywołuje Supabase insert z poprawnymi polami youtube_upload', async () => {
+    mockGetSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'tok', user: { id: 'user-a' } } },
+    });
+
+    const insertedVideo = {
+      ...FAKE_VIDEO_A,
+      source: 'youtube_upload' as const,
+      source_id: 'abc123',
+      source_url: 'https://www.youtube.com/watch?v=abc123',
+      thumbnail_url: 'https://i.ytimg.com/vi/abc123/mqdefault.jpg',
+      title: 'Test',
+    };
+
+    const builder = mockFrom();
+    builder.insert.mockReturnValue(builder);
+    builder.select.mockReturnValue(builder);
+    builder.single.mockResolvedValue({ data: insertedVideo, error: null });
+
+    const result = await createVideoFromUpload({
+      youtubeVideoId: 'abc123',
+      title: 'Test',
+    });
+
+    expect(result).toEqual(insertedVideo);
+    expect(builder.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: 'youtube_upload',
+        source_id: 'abc123',
+        source_url: 'https://www.youtube.com/watch?v=abc123',
+        thumbnail_url: 'https://i.ytimg.com/vi/abc123/mqdefault.jpg',
+      }),
+    );
+  });
+
+  it('brak sesji (mock getSession zwraca null) → rzuca Error("Not authenticated")', async () => {
+    mockGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    await expect(
+      createVideoFromUpload({ youtubeVideoId: 'abc123', title: 'Test' }),
+    ).rejects.toThrow('Not authenticated');
+  });
+
+  it('Supabase error → throwIfError rzuca', async () => {
+    mockGetSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'tok', user: { id: 'user-a' } } },
+    });
+
+    const builder = mockFrom();
+    builder.insert.mockReturnValue(builder);
+    builder.select.mockReturnValue(builder);
+    builder.single.mockResolvedValue({
+      data: null,
+      error: { message: 'db error' },
+    });
+
+    await expect(
+      createVideoFromUpload({ youtubeVideoId: 'abc123', title: 'Test' }),
+    ).rejects.toThrow('db error');
   });
 });
