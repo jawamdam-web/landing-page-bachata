@@ -1,7 +1,7 @@
 # Bachata Napoli MVP — checklist zadań
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-29 (Faza 3 done)
+**Ostatnia aktualizacja:** 2026-05-29 (Faza 4 done)
 
 > **Format:** każdy IU zawiera (1) checkboxy implementacyjne, (2) `Test:` z prefiksem typu `[Unit]`/`[E2E]`/`[Manual]`, (3) `Weryfikacja:` (automatyzowalne PASS/FAIL), (4) opcjonalny `Operator:` (kroki wymagające człowieka). `/dev-docs-review` automatycznie odznacza `Weryfikacja:` po PASS — operator checklist NIE jest odznaczany przez autopilota.
 
@@ -354,89 +354,90 @@
 
 ### IU-8: External sources — YouTube link paste + Meta (FB/IG) embed
 
-**Delegate:** feature-builder-fullstack | **Status:** Pending | **Zależy od:** IU-6, IU-3
+**Delegate:** feature-builder-fullstack | **Status:** ✅ Done (2026-05-29) — kod + unit testy. E2E odkładane do /dev-docs-review (wymagają żywej DB + API keys) | **Zależy od:** IU-6, IU-3
 
 > **Notatka wykonawcza:** test-first dla URL parserów (`parseYoutubeUrl` + `parseMetaUrl`) — edge cases gdzie błąd silnie failuje. Characterization-first przed UI.
 
 **Implementacja:**
-- [ ] Stwórz: `supabase/functions/fetch-youtube-metadata/index.ts`
-- [ ] Stwórz: `supabase/functions/validate-meta-embed/index.ts`
-- [ ] Stwórz: `supabase/functions/_shared/{cors,response}.ts`
-- [ ] Stwórz: `src/features/library/components/{AddVideoDialog,YoutubeLinkForm,MetaLinkForm,VideoPlayer,VideoDetailDialog}.tsx`
-- [ ] Stwórz: `src/lib/{url-parsers,duration,dompurify-wrapper}.ts`
-- [ ] Modify: `src/features/library/api/videos.ts` (createVideoFromYoutubeLink, createVideoFromMetaLink, updateVideo, deleteVideo)
-- [ ] Modify: `src/features/library/components/{VideoCard,EmptyLibrary}.tsx`
-- [ ] Stwórz testy: `src/lib/url-parsers.test.ts`, `src/lib/duration.test.ts`, `supabase/functions/fetch-youtube-metadata/index.test.ts`, `src/features/library/api/videos.test.ts`
+- [x] Stwórz: `supabase/functions/fetch-youtube-metadata/index.ts`
+- [x] Stwórz: `supabase/functions/validate-meta-embed/index.ts`
+- [x] Stwórz: `supabase/functions/_shared/{cors,response}.ts`
+- [x] Stwórz: `src/features/library/components/{AddVideoDialog,YoutubeLinkForm,MetaLinkForm,VideoPlayer,VideoDetailDialog}.tsx`
+- [x] Stwórz: `src/lib/{url-parsers,duration,dompurify-wrapper}.ts`
+- [x] Modify: `src/features/library/api/videos.ts` (createVideoFromYoutubeLink, createVideoFromMetaLink, updateVideo, deleteVideo)
+- [x] Modify: `src/features/library/components/{VideoCard,EmptyLibrary}.tsx`
+- [x] Stwórz testy: `src/lib/url-parsers.test.ts`, `src/lib/duration.test.ts`, `supabase/functions/fetch-youtube-metadata/index.test.ts`, `src/features/library/api/videos.test.ts`
+- [x] Dodano: `src/features/library/hooks/useVideoMutations.ts`, `src/components/ui/tabs.tsx`, `src/components/ui/textarea.tsx`
 
 **Test:**
-- [ ] Test: [Unit] `parseYoutubeUrl` dla 6 wariantów URL → ten sam video ID
-- [ ] Test: [Unit] `parseYoutubeUrl('https://google.com')` → `null`
-- [ ] Test: [Unit] `parseMetaUrl('https://instagram.com/reel/Cabc123/')` → `{ platform: 'ig', postId: 'Cabc123' }`
-- [ ] Test: [Unit] `parseMetaUrl('https://facebook.com/share/v/xyz/')` → `{ platform: 'fb', postId: 'xyz' }`
-- [ ] Test: [Unit] `parseIso8601Duration('PT4M30S')` → 270
-- [ ] Test: [Unit] `fetch-youtube-metadata` z fake ID → 404 error response
-- [ ] Test: [Unit] `fetch-youtube-metadata` cache hit: drugi call w 1h → cached, zero call do YT API
-- [ ] Test: [Unit] `createVideoFromYoutubeLink` z duplicate URL per user → rzuca → toast "Ten film już jest"
-- [ ] Test: [Unit] `createVideoFromYoutubeLink` z URL innego usera → success (per-user unique)
-- [ ] Test: [Unit] `sanitize` na valid Meta HTML → output zawiera iframe; na malicious → bez `<script>`
-- [ ] Test: [E2E] `/library` → "Dodaj film" → tab "YouTube link" → wklej valid URL → submit → toast + VideoCard w grid
-- [ ] Test: [E2E] Invalid URL "https://example.com" → form error "Nie rozpoznaję linku"
-- [ ] Test: [E2E] Klik VideoCard → VideoDetailDialog → VideoPlayer renderuje YT iframe
-- [ ] Test: [E2E] Tab "Facebook / Instagram" → IG reel URL → submit → film w grid + Meta embed renderuje
-- [ ] Test: [E2E] VideoDetailDialog → edit tytuł inline → blur → toast "Zapisano"
-- [ ] Test: [E2E] VideoDetailDialog → Delete → confirm → film znika z grid
+- [x] Test: [Unit] `parseYoutubeUrl` dla 6 wariantów URL → ten sam video ID *(PASS 2026-05-29: 25 testów parsers)*
+- [x] Test: [Unit] `parseYoutubeUrl('https://google.com')` → `null` *(PASS)*
+- [x] Test: [Unit] `parseMetaUrl('https://instagram.com/reel/Cabc123/')` → `{ platform: 'ig', postId: 'Cabc123' }` *(PASS)*
+- [x] Test: [Unit] `parseMetaUrl('https://facebook.com/share/v/xyz/')` → `{ platform: 'fb', postId: 'xyz' }` *(PASS)*
+- [x] Test: [Unit] `parseIso8601Duration('PT4M30S')` → 270 *(PASS: 8 testów duration)*
+- [x] Test: [Unit] `fetch-youtube-metadata` z fake ID → 404 error response *(PASS: 10 testów Edge Function logic)*
+- [x] Test: [Unit] `fetch-youtube-metadata` cache hit: drugi call w 1h → cached, zero call do YT API *(PASS)*
+- [x] Test: [Unit] `createVideoFromYoutubeLink` z duplicate URL per user → rzuca → toast "Ten film już jest" *(PASS: 26 testów videos.ts)*
+- [x] Test: [Unit] `createVideoFromYoutubeLink` z URL innego usera → success (per-user unique) *(PASS)*
+- [x] Test: [Unit] `sanitize` na valid Meta HTML → output zawiera iframe; na malicious → bez `<script>` *(PASS)*
+- [ ] Test: [E2E] `/library` → "Dodaj film" → tab "YouTube link" → wklej valid URL → submit → toast + VideoCard w grid *(odłożone — wymaga żywej Supabase DB + Edge Function env)*
+- [ ] Test: [E2E] Invalid URL "https://example.com" → form error "Nie rozpoznaję linku" *(odłożone)*
+- [ ] Test: [E2E] Klik VideoCard → VideoDetailDialog → VideoPlayer renderuje YT iframe *(odłożone)*
+- [ ] Test: [E2E] Tab "Facebook / Instagram" → IG reel URL → submit → film w grid + Meta embed renderuje *(odłożone — wymaga META_APP_ID/SECRET)*
+- [ ] Test: [E2E] VideoDetailDialog → edit tytuł inline → blur → toast "Zapisano" *(odłożone)*
+- [ ] Test: [E2E] VideoDetailDialog → Delete → confirm → film znika z grid *(odłożone)*
 
 **Weryfikacja:**
-- [ ] Weryfikacja: `bun run typecheck` + `bun run lint` + `bun run test` zielone
-- [ ] Weryfikacja: `supabase functions serve fetch-youtube-metadata` działa lokalnie + returns oczekiwane responses
-- [ ] Weryfikacja: `supabase functions serve validate-meta-embed` działa lokalnie (lub stub jeśli oEmbed unavailable)
-- [ ] Weryfikacja: E2E — add YT link + add Meta link + open detail dialog + delete end-to-end
+- [x] Weryfikacja: `bun run typecheck` + `bun run lint` + `bun run test` zielone *(248/248 PASS 2026-05-29)*
+- [ ] Weryfikacja: `supabase functions serve fetch-youtube-metadata` działa lokalnie + returns oczekiwane responses *(SKIP — Docker niedostępny)*
+- [ ] Weryfikacja: `supabase functions serve validate-meta-embed` działa lokalnie *(SKIP — Docker niedostępny)*
+- [ ] Weryfikacja: E2E — add YT link + add Meta link + open detail dialog + delete end-to-end *(odłożone — żywa DB)*
 
 **Operator:**
-- [ ] Operator: **Meta oEmbed status w 2026 ZWERYFIKOWANY** — wybrany flow (Plan A/B/C) PRZED implementacją kodu Meta path
+- [x] Operator: **Meta oEmbed status w 2026 ZWERYFIKOWANY** — Plan A (oEmbed API `graph.facebook.com/v18.0`) wybrany 2026-05-29
 - [ ] Operator: `YOUTUBE_API_KEY` w Supabase Edge Functions env (staging + prod)
-- [ ] Operator: `META_APP_ID` + `META_APP_SECRET` w env (jeśli Plan A)
+- [ ] Operator: `META_APP_ID` + `META_APP_SECRET` w env (Plan A)
 
 ---
 
 ### IU-9: YouTube upload — direct browser → user's YT (resumable)
 
-**Delegate:** feature-builder-fullstack | **Status:** Pending | **Zależy od:** IU-4, IU-6, IU-8
+**Delegate:** feature-builder-fullstack | **Status:** ✅ Done (2026-05-29) — kod + unit testy protokołu. E2E upload odkładane (wymaga realnego YT API + approved OAuth scope) | **Zależy od:** IU-4, IU-6, IU-8
 
 > **Notatka wykonawcza:** TEST-FIRST mandatory dla resumable upload protocol. To najbardziej kruchy element planu — chunking + 308 resume + 5xx retry + 401 refresh + abort cleanup = klaster edge cases gdzie nie-przetestowany kod silnie failuje w produkcji.
 
 **Implementacja:**
-- [ ] Stwórz: `src/lib/youtube-resumable-upload.ts` (clean impl protokołu)
-- [ ] Stwórz: `src/features/library/hooks/useResumableUpload.ts` (React Query mutation + sessionStorage persist)
-- [ ] Stwórz: `src/features/library/components/{VideoUploadForm,UploadProgress,UploadQueueWidget}.tsx`
-- [ ] Stwórz: `src/features/auth/components/GoogleScopeUpgradePrompt.tsx`
-- [ ] Stwórz: `src/features/auth/api/google-identity.ts` (hasYoutubeUploadScope, requestYoutubeUploadScope, getGoogleAccessToken, refreshGoogleAccessToken)
-- [ ] Modify: `src/features/library/api/videos.ts` (createVideoFromUpload)
-- [ ] Modify: `src/features/library/components/AddVideoDialog.tsx` (tab "Upload" wired)
-- [ ] Stwórz testy: `src/lib/youtube-resumable-upload.test.ts` (MSW), `src/features/library/hooks/useResumableUpload.test.tsx`, `src/features/auth/api/google-identity.test.ts`
+- [x] Stwórz: `src/lib/youtube-resumable-upload.ts` (clean impl protokołu)
+- [x] Stwórz: `src/features/library/hooks/useResumableUpload.ts` (React Query mutation + sessionStorage persist)
+- [x] Stwórz: `src/features/library/components/{VideoUploadForm,UploadProgress,UploadQueueWidget}.tsx`
+- [x] Stwórz: `src/features/auth/components/GoogleScopeUpgradePrompt.tsx`
+- [x] Stwórz: `src/features/auth/api/google-identity.ts` (hasYoutubeUploadScope, requestYoutubeUploadScope, getGoogleAccessToken, refreshGoogleAccessToken)
+- [x] Modify: `src/features/library/api/videos.ts` (createVideoFromUpload)
+- [x] Modify: `src/features/library/components/AddVideoDialog.tsx` (tab "Upload" wired z VideoUploadForm)
+- [x] Stwórz testy: `src/lib/youtube-resumable-upload.test.ts`, `src/features/library/hooks/useResumableUpload.test.tsx`, `src/features/auth/api/google-identity.test.ts`
 
 **Test:**
-- [ ] Test: [Unit] resumable upload: 5 MB file → 1 chunk → success, returns YT video ID
-- [ ] Test: [Unit] 50 MB file → 7 chunks (8 MB each) → wszystkie success
-- [ ] Test: [Unit] chunk zwraca 308 Resume Incomplete + Range → resume od indicated byte
-- [ ] Test: [Unit] chunk zwraca 503 → exponential backoff 1s/2s/4s/8s → success
-- [ ] Test: [Unit] 503 5x z rzędu → throw `UploadFailedError` po 5 retry
-- [ ] Test: [Unit] chunk zwraca 401 → `refreshGoogleAccessToken()` → retry z new token → success
-- [ ] Test: [Unit] refresh token fail → throw `AuthError` → UI re-prompts scope upgrade
-- [ ] Test: [Unit] abort middle of upload → DELETE resumable URL → state cleanup
-- [ ] Test: [Unit] `createVideoFromUpload` po success → INSERT do videos z source='youtube_upload'
-- [ ] Test: [Unit] `hasYoutubeUploadScope()` true gdy session ma scope; false otherwise
-- [ ] Test: [E2E] User bez scope → AddVideoDialog → tab "Upload" → widzisz `GoogleScopeUpgradePrompt`
-- [ ] Test: [E2E] User z scope: select 5 MB MP4 → progress 0%→100% → "Upload zakończony" → film w grid
-- [ ] Test: [E2E] User cancel w trakcie → toast "Upload anulowany" → grid bez filmu (verify w YT Studio bez resztki)
-- [ ] Test: [E2E] Mobile: file picker otwiera back camera dla "video" capture
-- [ ] Test: [E2E] File > 2 GB → form error "Plik za duży (max 2 GB)"
+- [x] Test: [Unit] resumable upload: 5 MB file → 1 chunk → success, returns YT video ID *(PASS 2026-05-29)*
+- [x] Test: [Unit] 50 MB file → 7 chunks (8 MB each) → wszystkie success *(PASS)*
+- [x] Test: [Unit] chunk zwraca 308 Resume Incomplete + Range → resume od indicated byte *(PASS)*
+- [x] Test: [Unit] chunk zwraca 503 → exponential backoff 1s/2s/4s/8s → success *(PASS)*
+- [x] Test: [Unit] 503 5x z rzędu → throw `UploadFailedError` po 5 retry *(PASS)*
+- [x] Test: [Unit] chunk zwraca 401 → `refreshGoogleAccessToken()` → retry z new token → success *(PASS)*
+- [x] Test: [Unit] refresh token fail → throw `AuthError` → UI re-prompts scope upgrade *(PASS)*
+- [x] Test: [Unit] abort middle of upload → DELETE resumable URL → state cleanup *(PASS)*
+- [x] Test: [Unit] `createVideoFromUpload` po success → INSERT do videos z source='youtube_upload' *(PASS)*
+- [x] Test: [Unit] `hasYoutubeUploadScope()` true gdy session ma scope; false otherwise *(PASS)*
+- [ ] Test: [E2E] User bez scope → AddVideoDialog → tab "Upload" → widzisz `GoogleScopeUpgradePrompt` *(odłożone — wymaga aktywnej sesji)*
+- [ ] Test: [E2E] User z scope: select 5 MB MP4 → progress 0%→100% → "Upload zakończony" → film w grid *(odłożone — wymaga realnego YT API + approved OAuth scope)*
+- [ ] Test: [E2E] User cancel w trakcie → toast "Upload anulowany" → grid bez filmu *(odłożone)*
+- [ ] Test: [E2E] Mobile: file picker otwiera back camera dla "video" capture *(odłożone — real device)*
+- [ ] Test: [E2E] File > 2 GB → form error "Plik za duży (max 2 GB)" *(odłożone)*
 
 **Weryfikacja:**
-- [ ] Weryfikacja: `bun run typecheck` przechodzi
-- [ ] Weryfikacja: `bun run test src/lib/youtube-resumable-upload` zielony (wszystkie protocol edge cases MSW mocks)
-- [ ] Weryfikacja: `bun run test src/features/library/hooks/useResumableUpload` zielony
-- [ ] Weryfikacja: E2E — scope upgrade prompt renderuje się dla usera bez scope
+- [x] Weryfikacja: `bun run typecheck` przechodzi *(PASS 2026-05-29)*
+- [x] Weryfikacja: `bun run test src/lib/youtube-resumable-upload` zielony *(PASS — wszystkie protocol edge cases)*
+- [x] Weryfikacja: `bun run test src/features/library/hooks/useResumableUpload` zielony *(PASS)*
+- [ ] Weryfikacja: E2E — scope upgrade prompt renderuje się dla usera bez scope *(odłożone — żywa sesja)*
 
 **Operator:**
 - [ ] Operator: **OAuth verification dla `youtube.upload` scope APPROVED przez Google** (krytyczne — bez tego users dostają warning screen "unverified app")

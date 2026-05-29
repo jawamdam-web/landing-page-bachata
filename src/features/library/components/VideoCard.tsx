@@ -29,6 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FolderPickerSheet } from './FolderPickerSheet';
 import { FolderPickerPopover } from './FolderPickerPopover';
+import { VideoDetailDialog } from './VideoDetailDialog';
 import type { Folder, Video, VideoSource } from '../types';
 
 const SOURCE_ICON: Record<VideoSource, React.ReactElement> = {
@@ -117,154 +118,169 @@ export function VideoCard({
   const sourceLabel = SOURCE_LABEL[video.source];
   const [sheetOpen, setSheetOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  function handleCardClick() {
+    setDetailOpen(true);
+  }
 
   return (
-    <article
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border border-border bg-bg-subtle transition-colors duration-[120ms] hover:border-border-strong active:scale-[0.98]"
-      aria-label={video.title}
-      data-testid="video-card"
-      data-source={video.source}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          // VideoDetailDialog w IU-8 — placeholder
-        }
-      }}
-    >
-      {/* Thumbnail 16:9 */}
-      <div className="relative aspect-video w-full overflow-hidden bg-bg-muted">
-        {video.thumbnail_url ? (
-          <img
-            src={video.thumbnail_url}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover"
-            style={{ boxShadow: 'inset 0 0 0 1px oklch(0.90 0.008 70)' }}
-          />
-        ) : (
+    <>
+      <article
+        className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border border-border bg-bg-subtle transition-colors duration-[120ms] hover:border-border-strong active:scale-[0.98]"
+        aria-label={video.title}
+        data-testid="video-card"
+        data-source={video.source}
+        role="button"
+        tabIndex={0}
+        onClick={handleCardClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
+      >
+        {/* Thumbnail 16:9 */}
+        <div className="relative aspect-video w-full overflow-hidden bg-bg-muted">
+          {video.thumbnail_url ? (
+            <img
+              src={video.thumbnail_url}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+              style={{ boxShadow: 'inset 0 0 0 1px oklch(0.90 0.008 70)' }}
+            />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{
+                background:
+                  'linear-gradient(135deg, oklch(0.94 0.008 70) 0%, oklch(0.90 0.008 70) 100%)',
+              }}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* ⋯ menu — desktop popover */}
           <div
-            className="h-full w-full"
-            style={{
-              background:
-                'linear-gradient(135deg, oklch(0.94 0.008 70) 0%, oklch(0.90 0.008 70) 100%)',
-            }}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* ⋯ menu — desktop popover */}
-        <div
-          className="absolute right-2 top-2 hidden md:block"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
-          <FolderPickerPopover
-            open={popoverOpen}
-            onOpenChange={setPopoverOpen}
-            videoId={video.id}
-            folders={folders}
-            currentFolderIds={currentFolderIds}
-          >
-            <Button
-              variant="secondary"
-              size="sm"
-              className="size-7 p-0 opacity-0 shadow-sm transition-opacity duration-[120ms] group-hover:opacity-100 focus-visible:opacity-100"
-              aria-label="Zarządzaj folderami"
-              tabIndex={-1}
-            >
-              <MoreHorizontal
-                className="size-4"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-            </Button>
-          </FolderPickerPopover>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-col gap-2 p-3">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-fg">
-          {video.title}
-        </h3>
-
-        {/* Meta row */}
-        <div className="flex items-center gap-2 text-xs text-fg-muted">
-          <span aria-label={`Źródło: ${sourceLabel}`}>{sourceIcon}</span>
-
-          {video.duration_seconds !== null &&
-            video.duration_seconds !== undefined && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span
-                  className="tabular-nums"
-                  aria-label={`Czas trwania: ${formatDuration(video.duration_seconds)}`}
-                >
-                  {formatDuration(video.duration_seconds)}
-                </span>
-              </>
-            )}
-
-          <span aria-hidden="true">·</span>
-          <time
-            dateTime={video.created_at}
-            title={new Date(video.created_at).toLocaleDateString('pl-PL')}
-          >
-            {relativeDate(video.created_at)}
-          </time>
-
-          {/* Mobile: foldery akcja na końcu meta row */}
-          <span
-            className="ml-auto md:hidden"
+            className="absolute right-2 top-2 hidden md:block"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="size-7 p-0"
-                  aria-label="Opcje filmu"
-                  tabIndex={-1}
-                >
-                  <MoreHorizontal
-                    className="size-4"
-                    strokeWidth={1.75}
-                    aria-hidden="true"
-                  />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() => setSheetOpen(true)}
-                  className="gap-2"
-                >
-                  <FolderKanban
-                    className="size-4"
-                    strokeWidth={1.75}
-                    aria-hidden="true"
-                  />
-                  Zarządzaj folderami
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </span>
+            <FolderPickerPopover
+              open={popoverOpen}
+              onOpenChange={setPopoverOpen}
+              videoId={video.id}
+              folders={folders}
+              currentFolderIds={currentFolderIds}
+            >
+              <Button
+                variant="secondary"
+                size="sm"
+                className="size-7 p-0 opacity-0 shadow-sm transition-opacity duration-[120ms] group-hover:opacity-100 focus-visible:opacity-100"
+                aria-label="Zarządzaj folderami"
+                tabIndex={-1}
+              >
+                <MoreHorizontal
+                  className="size-4"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
+              </Button>
+            </FolderPickerPopover>
+          </div>
         </div>
-      </div>
 
-      {/* Mobile folder picker sheet */}
-      <FolderPickerSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        videoId={video.id}
-        videoTitle={video.title}
-        folders={folders}
-        currentFolderIds={currentFolderIds}
+        {/* Content */}
+        <div className="flex flex-col gap-2 p-3">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-fg">
+            {video.title}
+          </h3>
+
+          {/* Meta row */}
+          <div className="flex items-center gap-2 text-xs text-fg-muted">
+            <span aria-label={`Źródło: ${sourceLabel}`}>{sourceIcon}</span>
+
+            {video.duration_seconds !== null &&
+              video.duration_seconds !== undefined && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span
+                    className="tabular-nums"
+                    aria-label={`Czas trwania: ${formatDuration(video.duration_seconds)}`}
+                  >
+                    {formatDuration(video.duration_seconds)}
+                  </span>
+                </>
+              )}
+
+            <span aria-hidden="true">·</span>
+            <time
+              dateTime={video.created_at}
+              title={new Date(video.created_at).toLocaleDateString('pl-PL')}
+            >
+              {relativeDate(video.created_at)}
+            </time>
+
+            {/* Mobile: foldery akcja na końcu meta row */}
+            <span
+              className="ml-auto md:hidden"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="size-7 p-0"
+                    aria-label="Opcje filmu"
+                    tabIndex={-1}
+                  >
+                    <MoreHorizontal
+                      className="size-4"
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onSelect={() => setSheetOpen(true)}
+                    className="gap-2"
+                  >
+                    <FolderKanban
+                      className="size-4"
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                    />
+                    Zarządzaj folderami
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </span>
+          </div>
+        </div>
+
+        {/* Mobile folder picker sheet */}
+        <FolderPickerSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          videoId={video.id}
+          videoTitle={video.title}
+          folders={folders}
+          currentFolderIds={currentFolderIds}
+        />
+      </article>
+
+      {/* VideoDetailDialog — otwierany po kliknięciu karty */}
+      <VideoDetailDialog
+        video={video}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
       />
-    </article>
+    </>
   );
 }

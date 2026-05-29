@@ -1,8 +1,8 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-29 (poprawy po review Fazy 3)
-**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + poprawy po review Fazy 3 ✅ ukończone; następna: Faza 4 (Video sources)
+**Ostatnia aktualizacja:** 2026-05-29 (Faza 4 done)
+**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ ukończone; następna: Faza 5 (Sharing + launch)
 
 ## Powiązane pliki
 
@@ -195,6 +195,28 @@
 - **P2 perf:** useFolders() w każdym VideoCard (N subscriptions), zbędny round-trip w assignVideoToFolders, brak invalidacji usuniętych folderów, select('*') w list view.
 - **P2 testy:** 6 komponentów IU-7 + hook useFolders bez testów, removeVideoFromFolder bez coverage.
 - **Pozytywne:** zero `any`, RLS na wszystkich tabelach, optimistic updates z rollback, Zod na formularzach.
+
+### Faza 4 — Video sources (2026-05-29) ✅
+
+**IU-8 (feature-builder-fullstack) — completed.** YouTube link paste + Meta (FB/IG) oEmbed embed. URL parsery (25 testów, characterization-first), Edge Functions (`fetch-youtube-metadata` z 1h Cache API TTL + JWT auth; `validate-meta-embed` Plan A — graph.facebook.com/v18.0), `AddVideoDialog` (Dialog desktop/Sheet mobile, 3 taby), `VideoPlayer` (YT nocookie iframe + Meta dangerouslySetInnerHTML + FB SDK lazy), `VideoDetailDialog` (inline title edit + notes + delete), `VideoCard` z click handler, `EmptyLibrary` aktywne CTA. Quality gates: typecheck/lint/test (248/248)/build PASS. Decyzje:
+- **Plan A (oEmbed)** wybrany przez operatora. Edge Function zwraca `{ error: 'oembed_unavailable', fallback: 'manual_entry' }` jeśli API zdefektuuje — UI obsługuje gracefully.
+- **`useVideoMutations.ts`** jako dedykowany hook (React Query mutations oddzielone od API layer).
+- **`dompurify`** zainstalowane przez bun. Wrapper `sanitizeEmbedHtml` używa string output.
+- **FB SDK loader:** lazy load tylko gdy renderuje się `meta_embed` source — zero kosztu w eager bundle.
+- **Edge Function test:** logika biznesowa testowana przez re-implementację helpera w Vitest (Deno.serve + Cache API niedostępne w JSDOM). Świadoma decyzja.
+
+**IU-9 (feature-builder-fullstack) — completed.** YouTube resumable upload protocol. `youtube-resumable-upload.ts` (8MB chunks, 308 resume, 5xx backoff 1/2/4/8/16s, 401 token refresh, abort + DELETE cleanup), `useResumableUpload` (React Query + sessionStorage persist), `VideoUploadForm` (file input capture="environment", 2GB check, 500MB+3G warn), `UploadProgress` (determinate bar + cancel + ETA), `UploadQueueWidget` (floating widget), `GoogleScopeUpgradePrompt`, `google-identity.ts` (hasYoutubeUploadScope, requestYoutubeUploadScope, getGoogleAccessToken, refreshGoogleAccessToken). Quality gates: typecheck/lint/test (276/276)/build PASS. Decyzje:
+- **HTTP 308 + MSW:** MSW traktuje 308 jako redirect — testy multi-chunk używają `vi.spyOn(global, 'fetch')` zamiast MSW handlers.
+- **`hasYoutubeUploadScope()`** czyta `user_metadata.youtube_upload_granted` — wymaga Supabase webhook/trigger po OAuth scope grant (patrz: blokery).
+- **`UploadQueueWidget` stan:** Aktualnie widget jest prezentacyjny; dla prawdziwego "background upload" (zamknięcie dialogu + widget w layoucie) potrzebny `UploadProvider` context wyniesiony do `DashboardLayout`. Do implementacji przed review Fazy 5.
+
+### Odchylenia od planu (Faza 4)
+
+- **IU-8:** Meta Edge Function endpoint dostosowany do `graph.facebook.com/v18.0` (Plan A). Fallback `oembed_unavailable` w Edge Function chroni przed deprecation bez zmiany kodu frontendu.
+- **IU-9:** `UploadQueueWidget` wymaga podniesienia stanu do `UploadProvider` dla background UX — aktualnie działa wewnątrz dialogu. Nie blokuje core functionality uploadu.
+- **IU-9:** `hasYoutubeUploadScope()` wymaga Supabase hook po OAuth — bez tego prompt zawsze widoczny. Akceptowalne dla MVP (użytkownik musi wyrazić zgodę raz).
+
+Żadne odchylenie nie zmienia scope MVP.
 
 ### Blokery / TODO przeniesione dalej
 

@@ -21,10 +21,11 @@ describe('EmptyLibrary', () => {
     expect(screen.getByText(/Wklej link/i)).toBeInTheDocument();
   });
 
-  it('renderuje przycisk "Dodaj film" w stanie disabled', () => {
+  it('renderuje aktywny przycisk "Dodaj film" (IU-8 — nie placeholder)', () => {
     render(<EmptyLibrary />);
     const button = screen.getByRole('button', { name: /Dodaj film/i });
-    expect(button).toBeDisabled();
+    // IU-8 implementuje AddVideoDialog — button jest teraz aktywny (nie disabled)
+    expect(button).not.toBeDisabled();
   });
 
   it('renderuje data-testid="empty-library"', () => {
