@@ -175,6 +175,16 @@
 - **P2-3 Supabase OTWARTE:** stack nie zweryfikowany (Docker niedostępny). Migracja `0001` poprawna statycznie (potwierdzone: `is_owner` SECURITY INVOKER + `search_path=''`, `private` poza PostgREST). Czeka na sesję z Dockerem.
 - **Kluczowy wniosek:** foundation jest czysty i security-conscious — zero `any`, zero sekretów, tsconfig przewyższa plan, testy testują behavior. Wzorzec do utrzymania w IU-4+.
 
+### Review Fazy 2 (2026-05-29)
+
+`/dev-docs-review` — 5 agentów (security, performance, architecture+TS, test-coverage, E2E browser axe-core) + konsolidacja. **Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI** — 0× P1, 5× P2, 11× P3. Raport: `review-faza-2.md`. Checkboxy w `*-zadania.md` → "Do poprawy po review fazy 2".
+
+- **CLI na żywo:** typecheck/lint/test (74/74)/build PASS. Eager JS **135.21 KB gzip** (limit 200). Constraint #3 zweryfikowany — supabase osobny lazy chunk 210 KB, zero w eager landing.
+- **P2-5 (najważniejszy) — kontrast WCAG AA:** axe-core wykrył biały tekst na accent terracotta = 3.74:1 (wymóg 4.5:1) na primary CTA + subtekst FinalCTA 3.13:1. Wcześniejszy "smoke a11y PASS" odłożył pełny axe — scan ujawnił naruszenie. Fix dotyka `global.css`/`DESIGN.md` (decyzja brandowa: przyciemnić accent).
+- **P2 perf:** react-query w eager mimo użycia dopiero od IU-6 → naprawić przy starcie IU-6.
+- **P2 arch+test (AuthProvider hotspot):** omija granicę auth.ts + cleanup/unsubscribe nieasertowany + brak testu guard `useRequireAuth`/`RequireAuth` (core security R8).
+- **Kluczowy wniosek:** security/architektura/type-safety wzorcowe (RLS poprawne, zero any/as/!, cleanupy §13, zero anty-patternów testowych). Główne długi: 1 realny a11y (kontrast) + testy guard/cleanup + perf eager. Wszystko nie-blokujące.
+
 ### Blokery / TODO przeniesione dalej
 
 - **Docker Desktop** wymagany do walidacji Supabase stack na żywo. Następna sesja na maszynie z Dockerem: `bunx supabase start && bunx supabase db reset && bun gen-db-types` → zastąpić stub `database.types.ts` + commit diff.
