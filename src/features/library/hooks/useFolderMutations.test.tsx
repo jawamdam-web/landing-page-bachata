@@ -30,6 +30,12 @@ vi.mock('../api/folders', () => ({
   deleteFolder: mockDeleteFolder,
   assignVideoToFolders: mockAssignVideoToFolders,
   getVideoFolderIds: vi.fn().mockResolvedValue([]),
+  // Używamy rzeczywistej implementacji isDuplicateFolderError — sprawdza .code
+  isDuplicateFolderError: (err: unknown) =>
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code: unknown }).code === '23505',
 }));
 
 vi.mock('@/features/auth/hooks/useAuth', () => ({
@@ -113,9 +119,11 @@ describe('useCreateFolder', () => {
   });
 
   it('przy błędzie 23505 pokazuje toast z komunikatem o duplikacie', async () => {
-    mockCreateFolder.mockRejectedValue(
-      new Error('duplicate key value violates unique constraint (23505)'),
-    );
+    // isDuplicateFolderError sprawdza .code, nie message
+    const duplicateErr = Object.assign(new Error('duplicate key'), {
+      code: '23505',
+    });
+    mockCreateFolder.mockRejectedValue(duplicateErr);
 
     const { Wrapper } = makeWrapper();
     const { result } = renderHook(() => useCreateFolder(), {

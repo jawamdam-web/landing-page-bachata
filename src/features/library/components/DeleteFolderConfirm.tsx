@@ -32,8 +32,12 @@ export function DeleteFolderConfirm({
   const { mutateAsync, isPending } = useDeleteFolder();
 
   async function handleDelete() {
-    await mutateAsync(folder.id);
-    onOpenChange(false);
+    try {
+      await mutateAsync(folder.id);
+      onOpenChange(false);
+    } catch {
+      // onError w hooku obsługuje toast — nie zamykamy dialogu przy błędzie
+    }
   }
 
   return (

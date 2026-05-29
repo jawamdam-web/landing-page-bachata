@@ -29,8 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FolderPickerSheet } from './FolderPickerSheet';
 import { FolderPickerPopover } from './FolderPickerPopover';
-import { useFolders } from '../hooks/useFolders';
-import type { Video, VideoSource } from '../types';
+import type { Folder, Video, VideoSource } from '../types';
 
 const SOURCE_ICON: Record<VideoSource, React.ReactElement> = {
   youtube_link: (
@@ -103,16 +102,21 @@ function relativeDate(dateStr: string): string {
 
 interface VideoCardProps {
   video: Video;
+  /** Lista folderów usera — przekazywana z VideoGrid (jeden useFolders per grid). */
+  folders: Folder[];
   /** Aktualne foldery do których należy film — przekazane z cache. */
   currentFolderIds?: string[];
 }
 
-export function VideoCard({ video, currentFolderIds = [] }: VideoCardProps) {
+export function VideoCard({
+  video,
+  folders,
+  currentFolderIds = [],
+}: VideoCardProps) {
   const sourceIcon = SOURCE_ICON[video.source];
   const sourceLabel = SOURCE_LABEL[video.source];
   const [sheetOpen, setSheetOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const { data: folders = [] } = useFolders();
 
   return (
     <article

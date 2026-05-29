@@ -11,24 +11,27 @@
  * QueryClient konfiguracja: staleTime 60s, retry 1 (zamiast domyślnego 3).
  */
 
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DashboardHeader } from './DashboardHeader';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60_000,
-      retry: 1,
-    },
-  },
-});
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60_000,
+            retry: 1,
+          },
+        },
+      }),
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-dvh flex-col bg-bg">

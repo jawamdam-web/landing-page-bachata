@@ -23,14 +23,12 @@ vi.mock('@/features/auth/hooks/useAuth', () => ({
 }));
 
 vi.mock('../hooks/useFolders', () => ({
-  useFolders: vi
-    .fn()
-    .mockReturnValue({
-      data: [],
-      isLoading: false,
-      isError: false,
-      error: null,
-    }),
+  useFolders: vi.fn().mockReturnValue({
+    data: [],
+    isLoading: false,
+    isError: false,
+    error: null,
+  }),
 }));
 
 function makeWrapper() {
@@ -66,7 +64,10 @@ function makeVideo(overrides: Partial<Video> = {}): Video {
 describe('VideoCard', () => {
   it('renderuje tytuł filmu', () => {
     render(
-      <VideoCard video={makeVideo({ title: 'Bachata Social Lublin' })} />,
+      <VideoCard
+        folders={[]}
+        video={makeVideo({ title: 'Bachata Social Lublin' })}
+      />,
       {
         wrapper: makeWrapper(),
       },
@@ -75,51 +76,73 @@ describe('VideoCard', () => {
   });
 
   it('renderuje correct aria-label z tytułem', () => {
-    render(<VideoCard video={makeVideo({ title: 'Sensual steps' })} />, {
-      wrapper: makeWrapper(),
-    });
+    render(
+      <VideoCard folders={[]} video={makeVideo({ title: 'Sensual steps' })} />,
+      {
+        wrapper: makeWrapper(),
+      },
+    );
     const card = screen.getByRole('button', { name: /Sensual steps/i });
     expect(card).toBeInTheDocument();
   });
 
   it('wyświetla aria-label "Źródło: YouTube" dla source youtube_link', () => {
-    render(<VideoCard video={makeVideo({ source: 'youtube_link' })} />, {
-      wrapper: makeWrapper(),
-    });
+    render(
+      <VideoCard folders={[]} video={makeVideo({ source: 'youtube_link' })} />,
+      {
+        wrapper: makeWrapper(),
+      },
+    );
     expect(screen.getByLabelText(/YouTube/i)).toBeInTheDocument();
   });
 
   it('wyświetla aria-label "Źródło: YouTube (upload)" dla source youtube_upload', () => {
-    render(<VideoCard video={makeVideo({ source: 'youtube_upload' })} />, {
-      wrapper: makeWrapper(),
-    });
+    render(
+      <VideoCard
+        folders={[]}
+        video={makeVideo({ source: 'youtube_upload' })}
+      />,
+      {
+        wrapper: makeWrapper(),
+      },
+    );
     expect(screen.getByLabelText(/YouTube \(upload\)/i)).toBeInTheDocument();
   });
 
   it('wyświetla aria-label "Źródło: Facebook/Instagram" dla source meta_embed', () => {
-    render(<VideoCard video={makeVideo({ source: 'meta_embed' })} />, {
-      wrapper: makeWrapper(),
-    });
+    render(
+      <VideoCard folders={[]} video={makeVideo({ source: 'meta_embed' })} />,
+      {
+        wrapper: makeWrapper(),
+      },
+    );
     expect(screen.getByLabelText(/Facebook\/Instagram/i)).toBeInTheDocument();
   });
 
   it('wyświetla duration w formacie mm:ss gdy duration_seconds podany', () => {
-    render(<VideoCard video={makeVideo({ duration_seconds: 185 })} />, {
-      wrapper: makeWrapper(),
-    });
+    render(
+      <VideoCard folders={[]} video={makeVideo({ duration_seconds: 185 })} />,
+      {
+        wrapper: makeWrapper(),
+      },
+    );
     expect(screen.getByLabelText(/Czas trwania: 03:05/i)).toBeInTheDocument();
   });
 
   it('nie wyświetla duration gdy duration_seconds jest null', () => {
-    render(<VideoCard video={makeVideo({ duration_seconds: null })} />, {
-      wrapper: makeWrapper(),
-    });
+    render(
+      <VideoCard folders={[]} video={makeVideo({ duration_seconds: null })} />,
+      {
+        wrapper: makeWrapper(),
+      },
+    );
     expect(screen.queryByLabelText(/Czas trwania/i)).not.toBeInTheDocument();
   });
 
   it('wyświetla thumbnail gdy thumbnail_url podany', () => {
     const { container } = render(
       <VideoCard
+        folders={[]}
         video={makeVideo({
           thumbnail_url: 'https://img.youtube.com/vi/abc/mqdefault.jpg',
         })}
@@ -136,7 +159,9 @@ describe('VideoCard', () => {
   });
 
   it('renderuje data-testid="video-card"', () => {
-    render(<VideoCard video={makeVideo()} />, { wrapper: makeWrapper() });
+    render(<VideoCard folders={[]} video={makeVideo()} />, {
+      wrapper: makeWrapper(),
+    });
     expect(screen.getByTestId('video-card')).toBeInTheDocument();
   });
 });

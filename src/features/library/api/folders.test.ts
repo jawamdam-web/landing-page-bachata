@@ -43,15 +43,15 @@ function makeBuilder(): MockBuilder {
   return builder;
 }
 
-const { mockFrom, mockGetUser } = vi.hoisted(() => ({
+const { mockFrom, mockGetSession } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
-  mockGetUser: vi.fn(),
+  mockGetSession: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: mockFrom,
-    auth: { getUser: mockGetUser },
+    auth: { getSession: mockGetSession },
   },
 }));
 
@@ -61,10 +61,9 @@ import {
   deleteFolder,
   getFolders,
   getVideoFolderIds,
+  removeVideoFromFolder,
   updateFolder,
 } from './folders';
-
-const FAKE_USER = { id: 'user-a', email: 'test@przyklad.pl' };
 
 const FAKE_FOLDER_A = {
   id: 'f-1',
@@ -133,20 +132,21 @@ describe('getFolders', () => {
 });
 
 describe('createFolder', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetUser.mockResolvedValue({ data: { user: FAKE_USER }, error: null });
-  });
+  beforeEach(() => vi.clearAllMocks());
   afterEach(() => vi.clearAllMocks());
 
   it('zwraca nowy folder z id po udanym INSERT', async () => {
     const builder = makeBuilder();
     mockFrom.mockReturnValue(builder);
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-a' } } },
+    });
     builder.single.mockResolvedValue({ data: FAKE_FOLDER_A, error: null });
 
     const result = await createFolder('Bachata sensual');
 
     expect(mockFrom).toHaveBeenCalledWith('folders');
+    // user_id pochodzi z getSession() (cache-first) — kolumna NOT NULL wymaga jawnego value
     expect(builder.insert).toHaveBeenCalledWith({
       name: 'Bachata sensual',
       user_id: 'user-a',
@@ -158,19 +158,29 @@ describe('createFolder', () => {
   it('rzuca Error z kodem 23505 dla duplikatu nazwy (unique constraint)', async () => {
     const builder = makeBuilder();
     mockFrom.mockReturnValue(builder);
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-a' } } },
+    });
     builder.single.mockResolvedValue({
       data: null,
       error: {
-        message: 'duplicate key value violates unique constraint (23505)',
+        code: '23505',
+        message: 'duplicate key value violates unique constraint',
       },
     });
 
-    await expect(createFolder('Bachata sensual')).rejects.toThrow('23505');
+    // throwIfError preserves .code — sprawdzamy kod (nie message) per §P2-arch-4
+    await expect(createFolder('Bachata sensual')).rejects.toMatchObject({
+      code: '23505',
+    });
   });
 
   it('rzuca Error gdy Supabase zwróci data: null bez błędu', async () => {
     const builder = makeBuilder();
     mockFrom.mockReturnValue(builder);
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-a' } } },
+    });
     builder.single.mockResolvedValue({ data: null, error: null });
 
     await expect(createFolder('Test')).rejects.toThrow(
@@ -181,21 +191,41 @@ describe('createFolder', () => {
   it('duplikat case-insensitive — rzuca constraint error (23505)', async () => {
     const builder = makeBuilder();
     mockFrom.mockReturnValue(builder);
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-a' } } },
+    });
     builder.single.mockResolvedValue({
       data: null,
-      error: { message: 'unique constraint violation 23505' },
+      error: { code: '23505', message: 'unique constraint violation' },
     });
 
     // "zajęcia" po "Zajęcia" → unique index na (user_id, lower(name)) zwraca 23505
-    await expect(createFolder('zajęcia')).rejects.toThrow('23505');
+    await expect(createFolder('zajęcia')).rejects.toMatchObject({
+      code: '23505',
+    });
   });
 
-  it('rzuca Error gdy user nie jest zalogowany', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
+  it('rzuca Error gdy brak aktywnej sesji (niezalogowany user)', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
 
-    await expect(createFolder('Test')).rejects.toThrow(
-      'Użytkownik nie jest zalogowany.',
-    );
+    await expect(createFolder('Test')).rejects.toThrow('Not authenticated');
+  });
+
+  it('RLS: niezalogowany user → Supabase zwraca błąd RLS (fallback gdy session istnieje)', async () => {
+    const builder = makeBuilder();
+    mockFrom.mockReturnValue(builder);
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-a' } } },
+    });
+    builder.single.mockResolvedValue({
+      data: null,
+      error: {
+        code: '42501',
+        message: 'new row violates row-level security policy',
+      },
+    });
+
+    await expect(createFolder('Test')).rejects.toThrow('row-level security');
   });
 });
 
@@ -320,6 +350,67 @@ describe('assignVideoToFolders', () => {
 
     // mockFrom tylko raz (getVideoFolderIds) — brak INSERT/DELETE call
     expect(mockFrom).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('removeVideoFromFolder', () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.clearAllMocks());
+
+  it('happy path: wywołuje DELETE z eq(video_id) i eq(folder_id)', async () => {
+    const builder = makeBuilder();
+    mockFrom.mockReturnValue(builder);
+    builder.eq.mockReturnValue(builder);
+    // Drugie eq() jest terminalne — resolves
+    builder.eq
+      .mockReturnValueOnce(builder)
+      .mockResolvedValueOnce({ error: null });
+
+    await removeVideoFromFolder('v-1', 'f-1');
+
+    expect(mockFrom).toHaveBeenCalledWith('video_folders');
+    expect(builder.delete).toHaveBeenCalled();
+    expect(builder.eq).toHaveBeenCalledWith('video_id', 'v-1');
+    expect(builder.eq).toHaveBeenCalledWith('folder_id', 'f-1');
+  });
+
+  it('error path: rzuca Error gdy Supabase zwróci błąd', async () => {
+    const builder = makeBuilder();
+    mockFrom.mockReturnValue(builder);
+    builder.eq.mockReturnValue(builder);
+    builder.eq
+      .mockReturnValueOnce(builder)
+      .mockResolvedValueOnce({ error: { message: 'delete failed' } });
+
+    await expect(removeVideoFromFolder('v-1', 'f-1')).rejects.toThrow(
+      'delete failed',
+    );
+  });
+});
+
+describe('assignVideoToFolders — edge cases', () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.clearAllMocks());
+
+  it('targetFolderIds=[] przy currentIds=[f-1,f-2] → DELETE obu powiązań', async () => {
+    // getVideoFolderIds zwraca [f-1, f-2], target [] → DELETE f-1 i f-2
+    const builderVF = makeBuilder();
+    const builderDelete = makeBuilder();
+
+    mockFrom.mockReturnValueOnce(builderVF).mockReturnValueOnce(builderDelete);
+
+    builderVF.eq.mockResolvedValue({
+      data: [{ folder_id: 'f-1' }, { folder_id: 'f-2' }],
+      error: null,
+    });
+    builderDelete.in.mockResolvedValue({ error: null });
+
+    await assignVideoToFolders('v-1', []);
+
+    expect(builderDelete.delete).toHaveBeenCalled();
+    expect(builderDelete.in).toHaveBeenCalledWith('folder_id', ['f-1', 'f-2']);
+    // Brak INSERT call
+    expect(builderDelete.insert).not.toHaveBeenCalled();
   });
 });
 

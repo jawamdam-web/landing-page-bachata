@@ -9,6 +9,7 @@
 
 import { EmptyLibrary } from './EmptyLibrary';
 import { VideoCard } from './VideoCard';
+import { useFolders } from '../hooks/useFolders';
 import type { Video } from '../types';
 
 interface VideoGridProps {
@@ -16,6 +17,9 @@ interface VideoGridProps {
 }
 
 export function VideoGrid({ videos }: VideoGridProps) {
+  // useFolders wołany raz na poziomie gridu — nie 30 razy per VideoCard
+  const { data: folders = [] } = useFolders();
+
   if (videos.length === 0) {
     return <EmptyLibrary />;
   }
@@ -28,7 +32,8 @@ export function VideoGrid({ videos }: VideoGridProps) {
       >
         {videos.map((video) => (
           <li key={video.id}>
-            <VideoCard video={video} />
+            {/* TODO IU-8: przekaż currentFolderIds z video_folders join */}
+            <VideoCard video={video} folders={folders} />
           </li>
         ))}
       </ul>

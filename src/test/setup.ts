@@ -2,6 +2,20 @@ import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
+// JSDOM nie implementuje ResizeObserver — wymagany przez cmdk (Command) i Radix Popover.
+if (typeof window !== 'undefined' && !window.ResizeObserver) {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+// JSDOM nie implementuje scrollIntoView — wymagany przez cmdk (Command).
+if (typeof window !== 'undefined') {
+  window.HTMLElement.prototype.scrollIntoView = function () {};
+}
+
 afterEach(() => {
   cleanup();
 });

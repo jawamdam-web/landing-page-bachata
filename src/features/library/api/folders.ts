@@ -13,11 +13,26 @@
 import { supabase } from '@/lib/supabase';
 import type { Folder, VideoFolder } from '../types';
 
-/** Rzuca przy błędzie Supabase. */
-function throwIfError(error: { message: string } | null): void {
+/** Rzuca przy błędzie Supabase — zachowuje oryginalny obiekt błędu z `.code`. */
+function throwIfError(error: { message: string; code?: string } | null): void {
   if (error) {
-    throw new Error(error.message);
+    const err = new Error(error.message) as Error & { code?: string };
+    err.code = error.code;
+    throw err;
   }
+}
+
+/**
+ * Sprawdza czy błąd to unique_violation PostgreSQL (kod 23505).
+ * Używa `.code` z PostgrestError — stabilny PG error code.
+ */
+export function isDuplicateFolderError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code: unknown }).code === '23505'
+  );
 }
 
 /**
@@ -37,20 +52,18 @@ export async function getFolders(): Promise<Folder[]> {
 /**
  * Tworzy nowy folder dla zalogowanego użytkownika.
  * Rzuca Error z kodem `23505` jeśli folder o tej nazwie (case-insensitive) już istnieje.
- * RLS wymusza user_id = auth.uid() po stronie bazy — wartość pobierana z sesji.
+ * user_id pochodzi z getSession() (cache-first, bez network call) — kolumna NOT NULL
+ * wymaga jawnego user_id przy INSERT; RLS and check zusätzlich egzekwuje ownership.
  */
 export async function createFolder(name: string): Promise<Folder> {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Użytkownik nie jest zalogowany.');
-  }
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
 
   const { data, error } = await supabase
     .from('folders')
-    .insert({ name, user_id: user.id })
+    .insert({ name, user_id: session.user.id })
     .select()
     .single();
 

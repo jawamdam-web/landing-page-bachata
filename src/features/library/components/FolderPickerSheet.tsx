@@ -9,7 +9,7 @@
  * Zawiera inline akcję "+ Nowy folder" → CreateFolderDialog.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, FolderIcon, FolderPlus } from 'lucide-react';
 import {
   Sheet,
@@ -44,6 +44,13 @@ export function FolderPickerSheet({
   const [createOpen, setCreateOpen] = useState(false);
   const { mutateAsync, isPending } = useAssignVideoToFolders();
 
+  // Sync stan lokalny gdy picker jest otwierany — currentFolderIds mogło się zmienić
+  // między dwoma otwarciami (invalidacja cache). Celowo tylko 'open' w deps.
+  useEffect(() => {
+    if (open) setSelected(currentFolderIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       // Discard uncommitted changes on close
@@ -61,8 +68,12 @@ export function FolderPickerSheet({
   }
 
   async function handleSave() {
-    await mutateAsync({ videoId, folderIds: selected });
-    onOpenChange(false);
+    try {
+      await mutateAsync({ videoId, folderIds: selected });
+      onOpenChange(false);
+    } catch {
+      // onError w hooku obsługuje toast — nie zamykamy sheetu przy błędzie
+    }
   }
 
   return (

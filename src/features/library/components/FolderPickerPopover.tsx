@@ -6,7 +6,7 @@
  * DESIGN.md: shadow-lg dla lifted elements (sekcja 7).
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, FolderIcon, FolderPlus } from 'lucide-react';
 import {
   Popover,
@@ -48,6 +48,13 @@ export function FolderPickerPopover({
   const [createOpen, setCreateOpen] = useState(false);
   const { mutateAsync, isPending } = useAssignVideoToFolders();
 
+  // Sync stan lokalny gdy popover jest otwierany — currentFolderIds mogło się zmienić
+  // między dwoma otwarciami (invalidacja cache). Celowo tylko 'open' w deps.
+  useEffect(() => {
+    if (open) setSelected(currentFolderIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       // Discard uncommitted changes on close
@@ -65,8 +72,12 @@ export function FolderPickerPopover({
   }
 
   async function handleSave() {
-    await mutateAsync({ videoId, folderIds: selected });
-    onOpenChange(false);
+    try {
+      await mutateAsync({ videoId, folderIds: selected });
+      onOpenChange(false);
+    } catch {
+      // onError w hooku obsługuje toast — nie zamykamy popovera przy błędzie
+    }
   }
 
   return (

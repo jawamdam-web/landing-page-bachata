@@ -40,8 +40,14 @@ function getInitials(
 export function DashboardHeader() {
   const { user, signOut } = useAuth();
 
-  const displayName = user?.user_metadata?.full_name as string | undefined;
-  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+  const displayName =
+    typeof user?.user_metadata?.full_name === 'string'
+      ? user.user_metadata.full_name
+      : undefined;
+  const avatarUrl =
+    typeof user?.user_metadata?.avatar_url === 'string'
+      ? user.user_metadata.avatar_url
+      : undefined;
   const initials = getInitials(displayName, user?.email);
 
   return (

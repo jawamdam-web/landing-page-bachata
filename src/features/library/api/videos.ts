@@ -33,17 +33,24 @@ export async function getVideos(
   if (folderId) {
     const { data, error } = await supabase
       .from('videos')
-      .select('*, video_folders!inner(folder_id)')
+      .select(
+        'id, user_id, source, source_url, source_id, title, notes, thumbnail_url, embed_html, duration_seconds, created_at, updated_at, video_folders!inner(folder_id)',
+      )
       .eq('video_folders.folder_id', folderId)
       .order('created_at', { ascending: false });
 
     throwIfError(error);
-    return (data ?? []) as Video[];
+    // Mapowanie usuwa artefakt `video_folders` z JOIN — nie jest częścią typu Video
+    return (data ?? []).map(
+      ({ video_folders: _vf, ...video }) => video as Video,
+    );
   }
 
   const { data, error } = await supabase
     .from('videos')
-    .select('*')
+    .select(
+      'id, user_id, source, source_url, source_id, title, notes, thumbnail_url, embed_html, duration_seconds, created_at, updated_at',
+    )
     .order('created_at', { ascending: false });
 
   throwIfError(error);

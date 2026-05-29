@@ -51,7 +51,11 @@ function VideoGridSkeleton() {
 function LibraryContent() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const activeFolderId = searchParams.get('folder');
+  const rawFolderId = searchParams.get('folder');
+  const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const activeFolderId =
+    rawFolderId && UUID_RE.test(rawFolderId) ? rawFolderId : null;
 
   function handleFolderSelect(folderId: string | null) {
     if (folderId === null) {
@@ -75,32 +79,20 @@ function LibraryContent() {
     data: videos,
     isLoading: videosLoading,
     isError,
-    error,
   } = useVideos({ folderId: activeFolderId ?? undefined });
 
   const isLoading = foldersLoading || videosLoading;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-8 md:px-8 xl:px-10">
-      {/* Page title + mobile folder selector */}
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-[-0.015em] text-fg">
-          Moja biblioteka
-        </h1>
-
-        {/* Mobile folder selector — widoczny <lg */}
-        {!foldersLoading && (
-          <LibrarySidebar
-            folders={folders ?? []}
-            activeFolderId={activeFolderId}
-            onFolderSelect={handleFolderSelect}
-          />
-        )}
-      </div>
+      {/* Page title */}
+      <h1 className="text-2xl font-semibold tracking-[-0.015em] text-fg">
+        Moja biblioteka
+      </h1>
 
       {/* Desktop: sidebar + main / Mobile: main only */}
       <div className="flex gap-8">
-        {/* Desktop sidebar — widoczny >=lg */}
+        {/* LibrarySidebar zawiera wewnętrznie DesktopSidebar (>=lg) i MobileFolderSheet (<lg) */}
         {!foldersLoading && (
           <LibrarySidebar
             folders={folders ?? []}
@@ -118,12 +110,7 @@ function LibraryContent() {
               role="alert"
               className="rounded-lg border border-border bg-bg-subtle px-4 py-6 text-center"
             >
-              <p className="text-sm text-fg-muted">
-                Nie udało się załadować filmów. Spróbuj jeszcze raz.
-              </p>
-              {error && (
-                <p className="mt-1 text-xs text-fg-subtle">{error.message}</p>
-              )}
+              <p className="text-sm text-fg-muted">Błąd ładowania filmów.</p>
             </div>
           )}
 

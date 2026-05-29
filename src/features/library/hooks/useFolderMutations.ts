@@ -20,13 +20,14 @@ import {
   assignVideoToFolders,
   createFolder,
   deleteFolder,
+  isDuplicateFolderError,
   updateFolder,
 } from '../api/folders';
 import type { Folder } from '../types';
 
 /** Zwraca komunikat błędu dla duplicate constraint (23505). */
 function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message.includes('23505')) {
+  if (isDuplicateFolderError(error)) {
     return 'Folder o tej nazwie już istnieje.';
   }
   return fallback;

@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUpdateFolder } from '../hooks/useFolderMutations';
+import { isDuplicateFolderError } from '../api/folders';
 import type { Folder } from '../types';
 
 const editFolderSchema = z.object({
@@ -65,7 +66,7 @@ export function EditFolderDialog({
       await mutateAsync({ id: folder.id, name: data.name });
       onOpenChange(false);
     } catch (error) {
-      if (error instanceof Error && error.message.includes('23505')) {
+      if (isDuplicateFolderError(error)) {
         setError('name', { message: 'Folder o tej nazwie już istnieje.' });
       }
     }
