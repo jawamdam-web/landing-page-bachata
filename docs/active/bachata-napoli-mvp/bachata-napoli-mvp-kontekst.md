@@ -218,6 +218,15 @@
 
 Żadne odchylenie nie zmienia scope MVP.
 
+### Review Fazy 4 (2026-05-29)
+
+`/dev-docs-review` — 1 agent pełny (test-coverage) + inline review security/performance/architecture (4 agenty hit session limit). **Severity gate: ⛔ WYMAGA POPRAWEK** — 1× P1, 6× P2, 10× P3. Raport: `review-faza-4.md`. E2E: SKIP (Agent 5 session limit — odłożone do sesji z żywą DB).
+
+- **P1 (blocking):** `sanitizeEmbedHtml` (dompurify-wrapper.ts) jest security-critical i nie ma żadnych testów. Jedyna ochrona XSS przed `dangerouslySetInnerHTML` w VideoPlayer. Musi być naprawione przed kontynuacją.
+- **P2 (testy):** VideoPlayer/VideoDetailDialog/YoutubeLinkForm/MetaLinkForm bez testów; createVideoFromUpload bez bezpośrednich testów; cache hit w fetch-youtube-metadata bez testu.
+- **P3 (nit):** style attr w DOMPurify config, brak sandbox na iframe, youtube-resumable-upload.ts 307 linii, useIsMobile zduplikowany, relative import zamiast aliasu.
+- **Pozytywne:** sanitizeEmbedHtml jest wywołana przed każdym dangerouslySetInnerHTML; Edge Functions weryfikują JWT; user_id z session (nie z inputu); DOMPurify w lazy chunk; eager bundle 127.67 KB gzip bez zmian; wszystkie 10 protokołu upload scenariuszy przetestowane.
+
 ### Blokery / TODO przeniesione dalej
 
 - **Docker Desktop** wymagany do walidacji Supabase stack na żywo. Następna sesja na maszynie z Dockerem: `bunx supabase start && bunx supabase db reset && bun gen-db-types` → zastąpić stub `database.types.ts` + commit diff.

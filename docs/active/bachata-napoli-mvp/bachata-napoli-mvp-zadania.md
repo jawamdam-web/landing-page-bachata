@@ -446,6 +446,35 @@
 
 ---
 
+## Do poprawy po review fazy 4
+
+> Severity gate: ⛔ WYMAGA POPRAWEK — 1× P1, 6× P2, 10× P3. Pełny raport: `review-faza-4.md`.
+
+**P1 — blocking:**
+- [ ] 🔴 [blocking] **src/lib/dompurify-wrapper.ts** — `sanitizeEmbedHtml` nie ma żadnych testów. Jedyna ochrona XSS przed `dangerouslySetInnerHTML`. Wymagane testy: valid oEmbed HTML → zachowuje iframe; `<script>` → usunięty; `onerror` attr → usunięty; `javascript:` href → usunięty; pusty string → `''`.
+
+**P2 — important:**
+- [ ] 🟠 [important] **src/features/library/components/VideoPlayer.tsx** — brak testów renderowania per source type (YT iframe, meta_embed dangerouslySetInnerHTML, fallback "Brak ID", fallback "Podgląd niedostępny").
+- [ ] 🟠 [important] **src/features/library/components/VideoDetailDialog.tsx** — brak testów: inline edit tytułu + blur → updateVideo; klik "Usuń" → AlertDialog → deleteVideo + onClose; "Anuluj" → dialog zamknięty bez delete.
+- [ ] 🟠 [important] **src/features/library/components/YoutubeLinkForm.tsx + MetaLinkForm.tsx** — brak testów formularzy (invalid URL → error inline, valid URL → submit + pending state).
+- [ ] 🟠 [important] **src/features/library/api/videos.test.ts** — brak bezpośrednich testów `createVideoFromUpload` (INSERT z source='youtube_upload', brak session → rzuca, Supabase error → rzuca).
+- [ ] 🟠 [important] **supabase/functions/fetch-youtube-metadata/index.test.ts** — cache hit → zero call do YT API nie jest przetestowany (Cache API niedostępna w Vitest). Dodaj TODO z notatką o limitacji Deno lub mock `caches`.
+- [ ] 🟠 [important] **supabase/functions/fetch-youtube-metadata/index.test.ts** — scenariusz "fake ID → 404" pokryty tylko pośrednio. Dodaj test mapowania `items: []` → `jsonError('not_found', ..., 404)`.
+
+**P3 — nit (opcjonalne):**
+- [ ] 🟡 [nit] **src/lib/dompurify-wrapper.ts:33** — `'style'` w ALLOWED_ATTR umożliwia CSS-based data exfiltration. Rozważ usunięcie jeśli FB/IG oEmbed HTML nie wymaga inline styles.
+- [ ] 🟡 [nit] **src/features/library/components/VideoPlayer.tsx** — brak `sandbox` na YT iframe. Defence-in-depth: `sandbox="allow-scripts allow-same-origin allow-presentation allow-fullscreen allow-popups"`.
+- [ ] 🟡 [nit] **src/lib/youtube-resumable-upload.ts** — 307 linii (limit: 300). `readBlobAsArrayBuffer` → wyciągnij do `src/lib/blob-utils.ts`.
+- [ ] 🟡 [nit] **src/lib/youtube-resumable-upload.ts:161** — `as UploadFailedError & { status: number }` pattern. Lepiej: `class UploadServerError extends UploadFailedError { status: number }`.
+- [ ] 🟡 [nit] **supabase/functions/validate-meta-embed/index.ts:122-159** — 3× identyczny `oembed_unavailable` Response inline. Wyciągnij do `oembedUnavailableResponse(reason)` helper.
+- [ ] 🟡 [nit] **src/features/library/hooks/useResumableUpload.ts:21** — relative import `../../../features/auth/...` → zamień na alias `@/features/auth/...`.
+- [ ] 🟡 [nit] **AddVideoDialog.tsx:84 + VideoDetailDialog.tsx:54** — `useIsMobile` zduplikowany. Wyciągnij do `src/hooks/useIsMobile.ts`.
+- [ ] 🟡 [nit] **src/lib/url-parsers.test.ts** — brak testu `parseMetaUrl` dla private FB post URL (`/permalink.php?story_fbid=...`) → powinien zwrócić null.
+- [ ] 🟡 [nit] **src/lib/youtube-resumable-upload.test.ts** — brak testu `file.size === 0` → powinien rzucić UploadFailedError zamiast wysyłać nieprawidłowy Content-Range.
+- [ ] 🟡 [nit] **VideoUploadForm.tsx + GoogleScopeUpgradePrompt.tsx + useVideoMutations.ts** — brak testów (scope states, upload states, duplicate video toast).
+
+---
+
 ## Faza 5 — Sharing + launch
 
 ### IU-10: Share tokens — public read access z revoke
