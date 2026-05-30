@@ -1,4 +1,5 @@
 import { MetaTags } from '@/components/seo/MetaTags';
+import { StructuredData } from '@/components/seo/StructuredData';
 import { PublicHeader } from '@/components/layout/PublicHeader';
 import { PublicFooter } from '@/components/layout/PublicFooter';
 import { Hero } from '@/features/landing/components/Hero';
@@ -24,6 +25,7 @@ export function LandingPage() {
         description="Zapisuj filmy z zajęć bachaty z YouTube, Facebooka i własnego telefonu. Lokalna społeczność dancerów w Lubinie."
         imageUrl="/og-image.svg"
       />
+      <StructuredData />
       <div className="flex min-h-dvh flex-col bg-bg">
         <PublicHeader />
         <main className="flex-1">

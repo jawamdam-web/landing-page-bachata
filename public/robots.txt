@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /library
+Disallow: /settings
+Disallow: /s/
+Sitemap: https://bachatanapoli.pl/sitemap.xml

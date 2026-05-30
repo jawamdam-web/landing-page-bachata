@@ -1,3 +1,7 @@
+// Sentry musi być inicjalizowany PRZED wszystkim żeby wychwytywał błędy init
+import { initSentry } from './lib/sentry';
+initSentry();
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';

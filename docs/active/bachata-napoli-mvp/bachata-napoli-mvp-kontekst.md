@@ -1,8 +1,8 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-30 (poprawy P1+P2 po review Fazy 4)
-**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ ukończone; następna: Faza 5 (Sharing + launch)
+**Ostatnia aktualizacja:** 2026-05-30 (Faza 5 done — IU-10 + IU-11 + IU-12)
+**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ + Faza 5 ✅ ukończone; następna: /dev-docs-review Fazy 5
 
 ## Powiązane pliki
 
@@ -226,6 +226,28 @@
 - **P2 (testy):** VideoPlayer/VideoDetailDialog/YoutubeLinkForm/MetaLinkForm bez testów; createVideoFromUpload bez bezpośrednich testów; cache hit w fetch-youtube-metadata bez testu.
 - **P3 (nit):** style attr w DOMPurify config, brak sandbox na iframe, youtube-resumable-upload.ts 307 linii, useIsMobile zduplikowany, relative import zamiast aliasu.
 - **Pozytywne:** sanitizeEmbedHtml jest wywołana przed każdym dangerouslySetInnerHTML; Edge Functions weryfikują JWT; user_id z session (nie z inputu); DOMPurify w lazy chunk; eager bundle 127.67 KB gzip bez zmian; wszystkie 10 protokołu upload scenariuszy przetestowane.
+
+### Faza 5 — Sharing + launch (2026-05-30) ✅
+
+**IU-10 (feature-builder-fullstack) — completed.** Share tokens: tabela `share_tokens` + `get_shared_content(text)` SECURITY DEFINER function (anon RPC). Komponenty: `ShareDialog` (Dialog desktop / Sheet mobile), `ShareLinkRow` (copy + revoke), `RevokeConfirm`, `SharedVideoView`, `SharedFolderView`, `RevokedTokenView`. Strona `/s/:token` (lazy, public). VideoDetailDialog + FolderList podpięte do ShareDialog. Quality gates: typecheck/lint/test (321/321)/build PASS. Decyzje:
+- **Migracja `0005_share_tokens.sql`** (plan mówił 0004, ale 0004 był zajęty przez patch RLS z Fazy 3).
+- **`database.types.ts` rozszerzony ręcznie** o share_tokens + get_shared_content RPC.
+- **Token 32-char URL-safe base64** z 24 losowych bajtów (Web Crypto API).
+
+**IU-11 (feature-builder-ui) — completed.** GDPR compliance: `/privacy`, `/regulamin`, `/contact`. `useCookieConsent` hook (localStorage `bachatanapoli.cookie-consent`). `CookieConsentBanner` (fixed bottom, renders only when analytics===null). Treść prawna jako statyczny JSX. Drafty prawnicze w `docs/legal/`. Quality gates: typecheck/lint/test (335/335)/build PASS. Decyzje:
+- **Brak react-markdown** (nie w package.json) → statyczny JSX z prose-legal CSS layer. DOMPurify byłoby over-engineering dla statycznej treści.
+- **CookieConsentBanner zamontowany w `main.tsx`** poza RouterProvider — linki `/privacy#cookies` jako `<a>` (full-page nav akceptowalna dla banneru).
+- **`.prose-legal` w global.css** — brak @tailwindcss/typography, ręczne style prose.
+
+**IU-12 (feature-builder-fullstack) — completed (z odchyleniem prerender).** Sentry React init (`src/lib/sentry.ts`, graceful skip bez DSN). Sentry Deno stub (`_shared/sentry.ts`, withSentry wrapper, pełna integracja odłożona na Deno 2.x). Plausible analytics (`src/lib/analytics.ts`, consent guard z localStorage). StructuredData JSON-LD (WebSite + LocalBusiness + Organization + Person, mounted na `/`). `scripts/generate-sitemap.ts`. `public/robots.txt`. Modyfikacje: main.tsx + index.html + Edge Functions wrapped. Quality gates: typecheck/lint/test (347/347)/build PASS. Decyzje:
+- **Prerender skipped** — żaden plugin (`vite-ssg`, `@prerenderer/plugin-vite`, `vite-plugin-prerender`) nie ma stabilnej integracji z React 19 + React Router 7 `createBrowserRouter` + Vite 6. SPA shell zachowany. Structured data i meta tagi są client-side. Prerender = osobne IU po MVP launch (lub migracja na Remix/Next.js).
+- **Sentry Deno stub** — Supabase Edge Functions Deno 1.45.x nie wspiera `npm:@sentry/deno`. Wrapper loguje przez console.error + re-throw. Upgrade po Deno 2.x.
+
+### Odchylenia od planu (Faza 5)
+
+- **IU-12: Prerender skipped** — React 19 + React Router 7 `createBrowserRouter` + Vite 6 nie ma stabilnego pluginu prerender. SPA zachowany, JSON-LD i meta client-side. Wymaga osobnego IU lub SSR migration po launch.
+- **IU-12: Sentry Deno stub** — Supabase Deno 1.45.x nie wspiera @sentry/deno. Wrapper funkcjonalny (re-throw + console.error), bez dashboard reporting.
+- **IU-11: Treść prawna jako JSX** — react-markdown nie był w projekcie, dangerouslySetInnerHTML byłby over-engineering dla statycznych stron.
 
 ### Blokery / TODO przeniesione dalej
 

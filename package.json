@@ -14,12 +14,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "gen-db-types": "./scripts/gen-db-types.sh",
+    "generate-sitemap": "bun run scripts/generate-sitemap.ts",
+    "build:full": "bun run build && bun run generate-sitemap",
     "prepare": "husky"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.5",
     "@fontsource-variable/geist-mono": "^5.2.5",
     "@hookform/resolvers": "3.10.0",
+    "@sentry/react": "^9",
     "@supabase/supabase-js": "^2.106.2",
     "@tanstack/react-query": "5.64.1",
     "class-variance-authority": "^0.7.1",
