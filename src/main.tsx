@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './features/auth/components/AuthProvider';
+import { CookieConsentBanner } from './features/legal/components/CookieConsentBanner';
 import { router } from './router';
 import './global.css';
 
@@ -34,6 +35,7 @@ createRoot(rootElement).render(
     <AuthProvider>
       <RouterProvider router={router} />
       <Toaster position="bottom-center" richColors closeButton />
+      <CookieConsentBanner />
     </AuthProvider>
   </StrictMode>,
 );
