@@ -1,0 +1,26 @@
+# Netlify — konfiguracja deployu dla Vite SPA (Bachata Napoli).
+#
+# Klucze (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SENTRY_DSN,
+# VITE_PLAUSIBLE_DOMAIN) ustawia się w panelu Netlify:
+#   Site settings → Environment variables. NIE commituje się ich tutaj.
+
+[build]
+  # build:full = tsc + vite build + wygenerowanie dist/sitemap.xml
+  command = "bun run build:full"
+  publish = "dist"
+
+# SPA fallback — każda ścieżka klienta (/privacy, /regulamin, /s/:token,
+# /library, /login...) musi trafić do index.html, żeby React Router obsłużył
+# routing po stronie klienta. Bez tego odświeżenie podstrony daje 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Bezpieczne nagłówki — dotyczą naszych zasobów, nie łamią embedów YouTube/Meta.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
