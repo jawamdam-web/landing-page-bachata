@@ -5,12 +5,15 @@
  * DESIGN.md: editorial, compact row z truncate na URL.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Link2Off } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { RevokeConfirm } from './RevokeConfirm';
-import type { ShareToken, ShareTargetType } from '../api/shareTokens';
+import { RevokeConfirm } from '@/features/sharing/components/RevokeConfirm';
+import type {
+  ShareToken,
+  ShareTargetType,
+} from '@/features/sharing/api/shareTokens';
 
 interface ShareLinkRowProps {
   shareToken: ShareToken;
@@ -33,15 +36,24 @@ export function ShareLinkRow({
 }: ShareLinkRowProps) {
   const [copied, setCopied] = useState(false);
   const [revokeOpen, setRevokeOpen] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const shareUrl = `${window.location.origin}/s/${shareToken.token}`;
+
+  // Cleanup timera przy unmount (np. po revoke) — §13.
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast.success('Skopiowano.');
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Nie udało się skopiować. Zaznacz link ręcznie.');
     }

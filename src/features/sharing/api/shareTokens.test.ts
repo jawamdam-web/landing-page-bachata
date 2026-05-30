@@ -383,6 +383,19 @@ describe('shareTokens API', () => {
       ).rejects.toThrow('token_invalid_or_revoked');
     });
 
+    it('rzuca target_not_found gdy token aktywny ale treść usunięta', async () => {
+      // get_shared_content RAISE EXCEPTION 'target_not_found' gdy video/folder
+      // zostało usunięte (target_id to weak reference bez FK).
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'target_not_found', code: 'P0001' },
+      });
+
+      await expect(fetchSharedContent('token-deleted-target')).rejects.toThrow(
+        'target_not_found',
+      );
+    });
+
     it('rzuca gdy rpc zwraca null data bez error', async () => {
       mockRpc.mockResolvedValueOnce({ data: null, error: null });
 

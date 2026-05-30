@@ -16,10 +16,14 @@ let initialized = false;
 export function initSentry(): void {
   if (initialized) return;
 
-  const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
 
-  if (!dsn) {
-    console.warn('Sentry DSN missing — error tracking disabled');
+  // Sanity check formatu — pusty string lub literalny "undefined" z buildu
+  // nie powinny trafić do Sentry.init().
+  if (!dsn || !dsn.startsWith('https://') || !dsn.includes('@')) {
+    if (import.meta.env.DEV) {
+      console.warn('Sentry DSN missing — error tracking disabled');
+    }
     return;
   }
 

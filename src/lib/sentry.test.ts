@@ -16,10 +16,16 @@ afterEach(() => {
 });
 
 describe('initSentry', () => {
-  it('nie crashuje i woła console.warn gdy brak VITE_SENTRY_DSN', async () => {
+  it('nie crashuje, woła console.warn i NIE inicjalizuje Sentry gdy brak VITE_SENTRY_DSN', async () => {
     // Arrange
     vi.stubEnv('VITE_SENTRY_DSN', '');
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const initMock = vi.fn();
+    vi.doMock('@sentry/react', () => ({
+      init: initMock,
+      browserTracingIntegration: vi.fn(() => ({ name: 'BrowserTracing' })),
+      replayIntegration: vi.fn(() => ({ name: 'Replay' })),
+    }));
 
     // Act
     const { initSentry } = await import('./sentry');
@@ -29,6 +35,7 @@ describe('initSentry', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       'Sentry DSN missing — error tracking disabled',
     );
+    expect(initMock).not.toHaveBeenCalled();
   });
 
   it('woła Sentry.init z DSN gdy VITE_SENTRY_DSN jest ustawiony', async () => {

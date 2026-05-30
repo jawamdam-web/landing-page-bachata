@@ -14,11 +14,11 @@ import {
   createShareToken,
   listShareTokens,
   revokeShareToken,
-} from '../api/shareTokens';
+} from '@/features/sharing/api/shareTokens';
 import type {
   CreateShareTokenParams,
   ShareTargetType,
-} from '../api/shareTokens';
+} from '@/features/sharing/api/shareTokens';
 
 /** Query key factory dla tokenów udostępniania. */
 export const shareTokensKeys = {

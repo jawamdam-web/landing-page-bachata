@@ -33,25 +33,43 @@ export interface CreateShareTokenResult {
   shareToken: ShareToken;
 }
 
+/**
+ * Pola video bezpieczne do publicznej ekspozycji.
+ * Bez `user_id` — `get_shared_content` celowo go pomija (prywatność właściciela).
+ */
+export type SharedVideo = Omit<Video, 'user_id' | 'updated_at'>;
+
+/** Metadane folderu w publicznym widoku — bez `user_id`. */
+export type SharedFolderMeta = {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
 /** Typ danych zwróconych przez get_shared_content RPC. */
 export type SharedVideoContent = {
   type: 'video';
-  video: Video;
+  video: SharedVideo;
 };
 
 export type SharedFolderContent = {
   type: 'folder';
-  folder: {
-    id: string;
-    user_id: string;
-    name: string;
-    created_at: string;
-    updated_at: string;
-  };
-  videos: Video[];
+  folder: SharedFolderMeta;
+  videos: SharedVideo[];
 };
 
 export type SharedContent = SharedVideoContent | SharedFolderContent;
+
+/**
+ * Type guard na granicy systemu — RPC zwraca `Json`, więc walidujemy
+ * dyskryminator zanim zwrócimy typowany `SharedContent`.
+ */
+function isSharedContent(value: unknown): value is SharedContent {
+  if (typeof value !== 'object' || value === null) return false;
+  const type = (value as Record<string, unknown>).type;
+  return type === 'video' || type === 'folder';
+}
 
 /** Rzuca przy błędzie Supabase z zachowaniem kodu. */
 function throwIfError(error: { message: string; code?: string } | null): void {
@@ -166,9 +184,9 @@ export async function fetchSharedContent(
     throw new Error(error.message);
   }
 
-  if (!data) {
+  if (!isSharedContent(data)) {
     throw new Error('token_invalid_or_revoked');
   }
 
-  return data as SharedContent;
+  return data;
 }

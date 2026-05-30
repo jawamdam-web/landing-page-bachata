@@ -10,7 +10,6 @@
  * Responsive: < md → Sheet bottom (onOpenChange kontrolowany z zewnątrz).
  */
 
-import { useEffect, useState } from 'react';
 import { UploadCloud, Youtube, Facebook } from 'lucide-react';
 import {
   Dialog,
@@ -25,6 +24,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { YoutubeLinkForm } from './YoutubeLinkForm';
 import { MetaLinkForm } from './MetaLinkForm';
 import { VideoUploadForm } from './VideoUploadForm';
@@ -78,23 +78,6 @@ function AddVideoContent({
       </TabsContent>
     </Tabs>
   );
-}
-
-/** Hook do detekcji mobile breakpoint (< md = 768px). */
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    setIsMobile(mq.matches);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  return isMobile;
 }
 
 export function AddVideoDialog({

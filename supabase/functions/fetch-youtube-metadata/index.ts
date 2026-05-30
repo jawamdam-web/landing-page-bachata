@@ -136,6 +136,10 @@ Deno.serve(
     const videoId = (body as { videoId: string }).videoId.trim();
     if (!videoId)
       return jsonError('invalid_input', 'videoId cannot be empty', 400);
+    // YouTube video ID = dokładnie 11 znaków [A-Za-z0-9_-]. Walidacja przed
+    // wywołaniem YT API oszczędza quota na garbage inputach (review P3-11).
+    if (!/^[A-Za-z0-9_-]{11}$/.test(videoId))
+      return jsonError('invalid_input', 'Invalid YouTube video ID format', 400);
 
     // Cache check
     const cacheKey = `https://yt-cache/${videoId}`;

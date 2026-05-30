@@ -34,9 +34,7 @@ export function initAnalytics(): void {
   if (!isAnalyticsEnabled()) return;
   if (document.getElementById(PLAUSIBLE_SCRIPT_ID)) return;
 
-  const domain =
-    (import.meta.env.VITE_PLAUSIBLE_DOMAIN as string | undefined) ??
-    'bachatanapoli.pl';
+  const domain = import.meta.env.VITE_PLAUSIBLE_DOMAIN ?? 'bachatanapoli.pl';
 
   const script = document.createElement('script');
   script.id = PLAUSIBLE_SCRIPT_ID;

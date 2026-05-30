@@ -1,8 +1,8 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-30 (review Fazy 5 — 0 P1, 12 P2, 14 P3)
-**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ + Faza 5 ✅ ukończone; review Fazy 5 gotowe; następna: naprawa P1+P2 z review-faza-5.md
+**Ostatnia aktualizacja:** 2026-05-30 (poprawy P2 po review Fazy 5 — 12/12 P2 + 11/14 P3 naprawione)
+**Status:** active — Faza 1–5 ✅ ukończone; review Fazy 5 ✅ + poprawki P2 ✅; MVP feature-complete. Następne: pre-launch gate (operator) + opcjonalnie soft pre-launch
 
 ## Powiązane pliki
 
@@ -259,6 +259,18 @@
 - **P2 testy:** brakujący test `target_not_found` w shareTokens.test.ts (P2-11), brak testów `withSentry` wrappera (P2-12).
 - **E2E PASS:** cookie banner ✓, /privacy ✓, /regulamin ✓, /contact ✓, footer linki ✓, /s/:token RevokedTokenView ✓, StructuredData JSON-LD ✓.
 - **Pozytywne:** RLS pattern wzorcowy, 192-bit token entropy, DOMPurify XSS guard, `FetchState` discriminated union, Plausible (cookieless), Sentry `beforeSend` maskuje PII.
+
+### Poprawki P2 po review Fazy 5 (2026-05-30)
+
+Wszystkie 12 P2 + 11/14 P3 naprawione inline. Quality gates: typecheck/lint/test (351/351, +4 nowe)/build PASS. Kluczowe:
+- **Privacy leak (P2-1):** `get_shared_content` przepisany z `row_to_json` na `jsonb_build_object` z jawną whitelistą kolumn — `user_id` właściciela już nie wycieka do anon. Typy `SharedVideo` (`Omit<Video, 'user_id'|'updated_at'>`) + `SharedFolderMeta` wprowadzone dla type-honesty; `SharedVideoView`/`SharedFolderView` przyjmują węższe typy. Przy okazji `FILTER (WHERE v.id IS NOT NULL)` naprawia latentny `videos: [null]` dla pustego folderu.
+- **Analytics broken (P2-8):** `initAnalytics()` nie była nigdzie wywoływana — Plausible w ogóle nie ładował. Teraz: `main.tsx` przy starcie (powracający user) + `CookieConsentBanner.handleAcceptAll` (świeża zgoda).
+- **useIsMobile (P2-5):** wyciągnięty do `src/hooks/useIsMobile.ts` — koniec 3× duplikacji (AddVideoDialog, VideoDetailDialog, ShareDialog). Dług z Fazy 4 spłacony.
+- **Type guard (P2-6):** `isSharedContent` zastąpił `as SharedContent` cast na granicy RPC (`Json` → typed).
+- **Meta SSRF + status leak (P2-2/3):** whitelist domen fb/ig + stały komunikat błędu.
+- **Edge cleanup:** `abortRef` martwy kod usunięty (P2-4), `setTimeout` cleanup w ShareLinkRow (P2-9), preconnect placeholder usunięty (P2-10).
+- **Testy:** `target_not_found` (shareTokens) + 3× `withSentry` (nowy `_shared/sentry.test.ts`).
+- **Pominięte P3 (świadomie):** isRevoking per-row (MVP max 5 tokenów), `select('*')` w listShareTokens (narrowing łamie typ, payload negligible), entropy-test refactor (wymaga ekstrakcji helpera).
 
 ### Blokery / TODO przeniesione dalej
 

@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
-Disallow: /library
-Disallow: /settings
+Disallow: /library/
+Disallow: /settings/
 Disallow: /s/
+Disallow: /auth-callback
+Disallow: /reset-password
 Sitemap: https://bachatanapoli.pl/sitemap.xml

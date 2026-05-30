@@ -12,7 +12,6 @@
  * DESIGN.md sekcja 10: modal centered desktop, bottom sheet mobile.
  */
 
-import { useEffect, useState } from 'react';
 import { Link2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,13 +26,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   useShareTokens,
   useCreateShareToken,
   useRevokeShareToken,
-} from '../hooks/useShareTokens';
-import { ShareLinkRow } from './ShareLinkRow';
-import type { ShareTargetType } from '../api/shareTokens';
+} from '@/features/sharing/hooks/useShareTokens';
+import { ShareLinkRow } from '@/features/sharing/components/ShareLinkRow';
+import type { ShareTargetType } from '@/features/sharing/api/shareTokens';
 
 interface ShareDialogProps {
   open: boolean;
@@ -41,23 +41,6 @@ interface ShareDialogProps {
   targetType: ShareTargetType;
   targetId: string;
   targetLabel: string;
-}
-
-/** Hook do detekcji mobile breakpoint (< md = 768px). */
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    setIsMobile(mq.matches);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  return isMobile;
 }
 
 function ShareDialogContent({

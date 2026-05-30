@@ -12,8 +12,11 @@
     />
     <!-- Preconnect do Supabase API (operator uzupełni pełny URL projektu) -->
     <link rel="preconnect" href="https://api.supabase.co" />
-    <!-- Preconnect do Sentry — inicjalizuje połączenie przed pierwszym błędem -->
-    <link rel="preconnect" href="https://o0.ingest.sentry.io" />
+    <!--
+      Preconnect do Sentry ingest dodać po skonfigurowaniu DSN:
+      <link rel="preconnect" href="https://o<ORG_ID>.ingest.sentry.io" />
+      (placeholder o0 usunięty — marnował RTT na nieistniejący host)
+    -->
   </head>
   <body>
     <div id="root"></div>

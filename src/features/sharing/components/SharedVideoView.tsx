@@ -9,10 +9,10 @@
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from '@/features/library/components/VideoPlayer';
-import type { Video } from '@/features/library/types';
+import type { SharedVideo } from '@/features/sharing/api/shareTokens';
 
 interface SharedVideoViewProps {
-  video: Video;
+  video: SharedVideo;
 }
 
 export function SharedVideoView({ video }: SharedVideoViewProps) {

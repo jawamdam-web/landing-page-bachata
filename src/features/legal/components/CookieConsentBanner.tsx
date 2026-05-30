@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { initAnalytics } from '@/lib/analytics';
 import { useCookieConsent } from '../hooks/useCookieConsent';
 
 /**
@@ -6,7 +7,10 @@ import { useCookieConsent } from '../hooks/useCookieConsent';
  *
  * Pozycja: fixed bottom-center (mobile) / bottom-right (desktop).
  * z-toast (70) — nad treścią, poniżej tooltipów.
- * WCAG: role="dialog", aria-live="polite", aria-label dla przycisków.
+ * WCAG: role="dialog", aria-modal, aria-describedby, aria-label dla przycisków.
+ *
+ * Po zgodzie na analitykę ładuje Plausible od razu (initAnalytics) — bez
+ * konieczności przeładowania strony.
  */
 
 export function CookieConsentBanner() {
@@ -14,14 +18,23 @@ export function CookieConsentBanner() {
 
   if (consent.analytics !== null) return null;
 
+  function handleAcceptAll() {
+    acceptAll();
+    // acceptAll() zapisuje consent do localStorage synchronicznie przed setState,
+    // więc isAnalyticsEnabled() wewnątrz initAnalytics() widzi już true.
+    initAnalytics();
+  }
+
   return (
     <div
       role="dialog"
+      aria-modal="true"
       aria-label="Zgoda na pliki cookie"
+      aria-describedby="cookie-consent-desc"
       aria-live="polite"
       className="fixed bottom-0 left-0 right-0 z-toast mx-auto max-w-sm border border-border bg-bg px-5 py-4 shadow-md sm:bottom-4 sm:left-auto sm:right-4 sm:rounded-lg"
     >
-      <p className="text-sm text-fg">
+      <p id="cookie-consent-desc" className="text-sm text-fg">
         Używamy cookies do działania serwisu. Cookies analityczne (opcjonalne)
         pomagają nam ulepszyć platformę.{' '}
         <a
@@ -44,7 +57,7 @@ export function CookieConsentBanner() {
         <Button
           variant="primary"
           size="sm"
-          onClick={acceptAll}
+          onClick={handleAcceptAll}
           aria-label="Zaakceptuj wszystkie cookies"
         >
           Akceptuj wszystkie

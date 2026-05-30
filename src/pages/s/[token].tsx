@@ -12,7 +12,7 @@
  *   type=folder → SharedFolderView
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { PublicHeader } from '@/components/layout/PublicHeader';
 import { fetchSharedContent } from '@/features/sharing/api/shareTokens';
@@ -42,7 +42,6 @@ export function SharedTokenPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [state, setState] = useState<FetchState>({ status: 'loading' });
-  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -50,9 +49,8 @@ export function SharedTokenPage() {
       return;
     }
 
-    const controller = new AbortController();
-    abortRef.current = controller;
-
+    // Supabase JS RPC nie wspiera AbortSignal — flaga `cancelled` chroni
+    // przed setState po unmount (request dokończy się w tle, wynik ignorowany).
     let cancelled = false;
 
     fetchSharedContent(token)
@@ -69,7 +67,6 @@ export function SharedTokenPage() {
 
     return () => {
       cancelled = true;
-      controller.abort();
     };
   }, [token]);
 

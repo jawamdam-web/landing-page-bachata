@@ -2,6 +2,12 @@
 import { initSentry } from './lib/sentry';
 initSentry();
 
+// Analytics: dla powracających userów którzy wcześniej wyrazili zgodę.
+// initAnalytics() jest no-op gdy brak zgody — guard wewnątrz.
+// Świeża zgoda (pierwsza wizyta) ładuje skrypt z CookieConsentBanner.
+import { initAnalytics } from './lib/analytics';
+initAnalytics();
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';

@@ -617,43 +617,43 @@
 
 ## Do poprawy po review fazy 5
 
-> Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI — 0× P1, 12× P2, 14× P3. Pełny raport: `review-faza-5.md`.
+> Severity gate: ✅ wszystkie P2 naprawione 2026-05-30 (typecheck/lint/test 351/351/build PASS). 11/14 P3 naprawione, 3 świadomie pominięte. Pełny raport: `review-faza-5.md`.
 
 **P2 — Security:**
-- [ ] 🟠 [important] **supabase/migrations/0005_share_tokens.sql:59–72** — `row_to_json(v)` leakuje `user_id` właściciela w publicznej odpowiedzi anon. Zamień na `jsonb_build_object` z wybrzonymi kolumnami (pomiń `user_id`).
-- [ ] 🟠 [important] **supabase/functions/validate-meta-embed/index.ts:106–118** — brak walidacji domeny `mediaUrl` przed przekazaniem do Meta API. Dodaj `if (!mediaUrl.startsWith(ALLOWED_DOMAINS[platform]))` guard.
-- [ ] 🟠 [important] **supabase/functions/validate-meta-embed/index.ts:148–155** — HTTP status Meta API wycieka do klienta (`Meta oEmbed returned ${status}`). Zamień na stały string `'Meta oEmbed API unavailable'`.
+- [x] 🟠 [important] **supabase/migrations/0005_share_tokens.sql** — `row_to_json` zamieniony na `jsonb_build_object` z jawnymi kolumnami (pomija `user_id`); dodatkowo `FILTER (WHERE v.id IS NOT NULL)` naprawia `[null]` dla pustego folderu. *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **supabase/functions/validate-meta-embed/index.ts** — `isAllowedMediaUrl` whitelist prefiksów fb/ig przed wywołaniem Meta API (SSRF defense-in-depth). *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **supabase/functions/validate-meta-embed/index.ts** — status Meta API już nie wycieka; stały komunikat `'Meta oEmbed API unavailable'` (status logowany server-side). *(RESOLVED 2026-05-30)*
 
 **P2 — Architecture / Type Safety:**
-- [ ] 🟠 [important] **src/pages/s/[token].tsx:45–54** — martwy kod `abortRef` — `controller.signal` nigdy nieprzekazany do RPC. Usuń `abortRef` i `useRef` import; zostaw tylko `cancelled` flag.
-- [ ] 🟠 [important] **src/features/sharing/components/ShareDialog.tsx:47** — `useIsMobile` zduplikowany po raz 3. (AddVideoDialog + VideoDetailDialog + ShareDialog). Wyciągnij do `src/hooks/useIsMobile.ts` i zastąp wszystkie 3 importy.
-- [ ] 🟠 [important] **src/features/sharing/api/shareTokens.ts:173** — `as SharedContent` cast bez runtime type guard na granicy systemu (RPC zwraca `Json`). Dodaj `isSharedContent(v: unknown): v is SharedContent` type guard.
-- [ ] 🟠 [important] **src/vite-env.d.ts** — `VITE_SENTRY_DSN` i `VITE_PLAUSIBLE_DOMAIN` niezadeklarowane w `ImportMetaEnv`. Dodaj `readonly VITE_SENTRY_DSN?: string` i `readonly VITE_PLAUSIBLE_DOMAIN?: string`.
-- [ ] 🟠 [important] **src/lib/analytics.ts** — `initAnalytics()` eksportowana ale **nigdy nie wywoływana** — Plausible nie działa. W `CookieConsentBanner` po `acceptAll()` wywołaj `initAnalytics()`.
+- [x] 🟠 [important] **src/pages/s/[token].tsx** — usunięto martwy `abortRef` + `useRef`; komentarz wyjaśnia że Supabase RPC nie wspiera AbortSignal, `cancelled` flag wystarcza. *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **src/hooks/useIsMobile.ts** — wyciągnięty shared hook; AddVideoDialog + VideoDetailDialog + ShareDialog importują go zamiast 3 kopii. *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **src/features/sharing/api/shareTokens.ts** — `isSharedContent` type guard zastąpił `as SharedContent` cast na granicy RPC. *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **src/vite-env.d.ts** — `VITE_SENTRY_DSN?` + `VITE_PLAUSIBLE_DOMAIN?` zadeklarowane; usunięto ręczne casy w sentry.ts/analytics.ts. *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **src/lib/analytics.ts** — `initAnalytics()` wywoływane: w `main.tsx` przy starcie (powracający user z wcześniejszą zgodą) + w `CookieConsentBanner.handleAcceptAll()` (świeża zgoda). *(RESOLVED 2026-05-30)*
 
 **P2 — Performance:**
-- [ ] 🟠 [important] **src/features/sharing/components/ShareLinkRow.tsx:44** — `setTimeout` bez cleanup (§13 violation). Użyj `useRef<ReturnType<typeof setTimeout>>` + `useEffect` z `clearTimeout`.
-- [ ] 🟠 [important] **index.html:16** — `o0.ingest.sentry.io` w preconnect to placeholder. Usuń lub zaktualizuj po skonfigurowaniu prawdziwego Sentry DSN.
+- [x] 🟠 [important] **src/features/sharing/components/ShareLinkRow.tsx** — `copyTimerRef` + `useEffect` cleanup; clearTimeout przy unmount i przed nowym timerem. *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **index.html** — placeholder `o0.ingest.sentry.io` usunięty; komentarz z instrukcją dodania prawdziwego ingest po DSN. *(RESOLVED 2026-05-30)*
 
 **P2 — Test Coverage:**
-- [ ] 🟠 [important] **src/features/sharing/api/shareTokens.test.ts** — brakujący test `fetchSharedContent(tokenZdeletedVideo) → throws 'target_not_found'` (wymagany przez plan IU-10).
-- [ ] 🟠 [important] **supabase/functions/_shared/sentry.ts** — brak testów `withSentry` wrappera. Napisz test: (1) brak SENTRY_DSN → handler działa normalnie, (2) handler rzuca → error re-throwowany.
+- [x] 🟠 [important] **src/features/sharing/api/shareTokens.test.ts** — dodany test `target_not_found` (token aktywny, treść usunięta). *(RESOLVED 2026-05-30)*
+- [x] 🟠 [important] **supabase/functions/_shared/sentry.test.ts** — nowy plik, 3 testy `withSentry` (no-DSN no-op, success passthrough, error re-throw + console.error). *(RESOLVED 2026-05-30)*
 
-**P3 — Nit (opcjonalne):**
-- [ ] 🟡 [nit] **supabase/migrations/0005_share_tokens.sql:8** — brak `CHECK (char_length(token) = 32)` na kolumnie `token`.
-- [ ] 🟡 [nit] **public/robots.txt:3–4** — `Disallow: /library` bez trailing slash. Zmień na `Disallow: /library/` i `Disallow: /settings/`.
-- [ ] 🟡 [nit] **src/lib/sentry.ts:22** — `console.warn` w produkcyjnym kodzie. Ogranicz do `if (import.meta.env.DEV)`.
-- [ ] 🟡 [nit] **src/features/sharing/hooks/useShareTokens.ts** + komponenty sharing — relative imports zamiast `@/features/sharing/...` aliasów.
-- [ ] 🟡 [nit] **src/features/sharing/components/SharedFolderView.tsx:24–31** — lokalny interface `SharedFolder` duplikuje `SharedFolderContent['folder']`. Zamień na `type SharedFolder = SharedFolderContent['folder']`.
-- [ ] 🟡 [nit] **src/features/sharing/components/ShareDialog.tsx:72,109** — `isRevoking` blokuje wszystkie przyciski "Cofnij" jednocześnie. Dodaj komentarz lub napraw przez `revokingId` state.
-- [ ] 🟡 [nit] **src/features/sharing/api/shareTokens.ts:138** — `listShareTokens` zwraca `select('*')`. Ogranicz do `select('id, token, created_at')`.
-- [ ] 🟡 [nit] **src/lib/sentry.ts:19** — brak sanity check formatu DSN przed `Sentry.init()`. Dodaj `if (!dsn || !dsn.startsWith('https://'))` guard.
-- [ ] 🟡 [nit] **supabase/functions/validate-meta-embed/index.ts** — brak `mediaUrl.length > 2048` check.
-- [ ] 🟡 [nit] **supabase/functions/fetch-youtube-metadata/index.ts:136** — `videoId` bez walidacji formatu `/^[A-Za-z0-9_-]{11}$/` (marnuje quota YT API przy garbage input).
-- [ ] 🟡 [nit] **src/features/legal/components/CookieConsentBanner.tsx:20** — `role="dialog"` bez `aria-modal="true"` i `aria-describedby`.
-- [ ] 🟡 [nit] **src/lib/sentry.test.ts** — brak negatywnej asercji "Sentry.init NIE wywołane gdy brak DSN".
-- [ ] 🟡 [nit] **src/features/sharing/api/shareTokens.test.ts** — test entropii tokenów testuje mock, nie faktyczną `generateToken()`.
-- [ ] 🟡 [nit] **src/features/sharing/components/ShareDialog.tsx:131** — `const title = \`Udostępnij: ${targetLabel}\`` tworzony przy każdym renderze; kandydat na `useMemo`.
+**P3 — Nit:**
+- [x] 🟡 [nit] **0005_share_tokens.sql** — `CHECK (char_length(token) = 32)` dodany. *(RESOLVED)*
+- [x] 🟡 [nit] **public/robots.txt** — trailing slashe + `Disallow: /auth-callback` + `/reset-password`. *(RESOLVED)*
+- [x] 🟡 [nit] **src/lib/sentry.ts** — `console.warn` tylko `if (import.meta.env.DEV)`. *(RESOLVED)*
+- [x] 🟡 [nit] **sharing — relative imports** — ShareDialog/ShareLinkRow/useShareTokens używają `@/features/sharing/...`. *(RESOLVED)*
+- [x] 🟡 [nit] **SharedFolderView.tsx** — używa `SharedFolderMeta` + `SharedVideo` z API zamiast lokalnego interfejsu. *(RESOLVED)*
+- [ ] 🟡 [nit] **ShareDialog.tsx** — `isRevoking` blokuje wszystkie przyciski "Cofnij" jednocześnie. *(POMINIĘTE — MVP max 5 tokenów, akceptowalne)*
+- [ ] 🟡 [nit] **shareTokens.ts** — `listShareTokens` `select('*')`. *(POMINIĘTE — narrowing łamie typ `ShareToken[]`, payload negligible przy max 5 rows)*
+- [x] 🟡 [nit] **src/lib/sentry.ts** — sanity check DSN (`startsWith('https://') && includes('@')`) przed init. *(RESOLVED)*
+- [x] 🟡 [nit] **validate-meta-embed/index.ts** — `mediaUrl.length > 2048` check. *(RESOLVED)*
+- [x] 🟡 [nit] **fetch-youtube-metadata/index.ts** — walidacja formatu `videoId` `/^[A-Za-z0-9_-]{11}$/`. *(RESOLVED)*
+- [x] 🟡 [nit] **CookieConsentBanner.tsx** — `aria-modal="true"` + `aria-describedby`. *(RESOLVED)*
+- [x] 🟡 [nit] **src/lib/sentry.test.ts** — dodana negatywna asercja `initMock not.toHaveBeenCalled`. *(RESOLVED)*
+- [ ] 🟡 [nit] **shareTokens.test.ts** — test entropii testuje mock, nie `generateToken()`. *(POMINIĘTE — wymaga ekstrakcji helpera; nit)*
+- [x] 🟡 [nit] **ShareDialog.tsx** — `title` template literal przy renderze. *(faktycznie negligible — pozostawione bez useMemo, ale plik posprzątany przy okazji P2-5)* 
 
 ---
 

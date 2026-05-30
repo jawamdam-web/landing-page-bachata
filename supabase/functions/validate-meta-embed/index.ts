@@ -36,6 +36,27 @@ interface OEmbedResponse {
   author_name?: string;
 }
 
+// Whitelist dozwolonych prefiksów URL per platforma — broni przed przekazaniem
+// dowolnego URLa do Meta API (SSRF defense-in-depth). Trailing slash w prefiksie
+// blokuje obejście typu https://facebook.com.evil.com/ (review P2-2).
+const ALLOWED_URL_PREFIXES: Record<'fb' | 'ig', readonly string[]> = {
+  fb: [
+    'https://www.facebook.com/',
+    'https://facebook.com/',
+    'https://m.facebook.com/',
+    'https://fb.watch/',
+  ],
+  ig: ['https://www.instagram.com/', 'https://instagram.com/'],
+};
+
+const MAX_MEDIA_URL_LENGTH = 2048;
+
+function isAllowedMediaUrl(platform: 'fb' | 'ig', mediaUrl: string): boolean {
+  return ALLOWED_URL_PREFIXES[platform].some((prefix) =>
+    mediaUrl.startsWith(prefix),
+  );
+}
+
 function getOEmbedUrl(
   platform: 'fb' | 'ig',
   mediaUrl: string,
@@ -106,6 +127,16 @@ Deno.serve(
     if (typeof mediaUrl !== 'string' || !mediaUrl) {
       return jsonError('invalid_input', 'url must be a non-empty string', 400);
     }
+    if (mediaUrl.length > MAX_MEDIA_URL_LENGTH) {
+      return jsonError('invalid_input', 'url is too long', 400);
+    }
+    if (!isAllowedMediaUrl(platform, mediaUrl)) {
+      return jsonError(
+        'invalid_input',
+        'url must be a facebook.com or instagram.com link',
+        400,
+      );
+    }
 
     // Get Meta credentials
     const metaAppId = Deno.env.get('META_APP_ID');
@@ -147,7 +178,8 @@ Deno.serve(
         JSON.stringify({
           error: {
             code: 'oembed_unavailable',
-            message: `Meta oEmbed returned ${metaResponse.status}`,
+            // Status logowany server-side; nie ujawniamy go klientowi (review P2-3).
+            message: 'Meta oEmbed API unavailable',
             fallback: 'manual_entry',
           },
         }),

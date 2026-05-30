@@ -19,19 +19,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { Video } from '@/features/library/types';
-
-interface SharedFolder {
-  id: string;
-  user_id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
+import type {
+  SharedFolderMeta,
+  SharedVideo,
+} from '@/features/sharing/api/shareTokens';
 
 interface SharedFolderViewProps {
-  folder: SharedFolder;
-  videos: Video[];
+  folder: SharedFolderMeta;
+  videos: SharedVideo[];
 }
 
 /** Karta read-only dla gridu publicznego. */
@@ -39,7 +34,7 @@ function PublicVideoCard({
   video,
   onClick,
 }: {
-  video: Video;
+  video: SharedVideo;
   onClick: () => void;
 }) {
   return (
@@ -95,7 +90,7 @@ function PublicVideoDialog({
   open,
   onOpenChange,
 }: {
-  video: Video | null;
+  video: SharedVideo | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -128,10 +123,10 @@ function PublicVideoDialog({
 
 export function SharedFolderView({ folder, videos }: SharedFolderViewProps) {
   const navigate = useNavigate();
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<SharedVideo | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  function handleVideoClick(video: Video) {
+  function handleVideoClick(video: SharedVideo) {
     setSelectedVideo(video);
     setDialogOpen(true);
   }
