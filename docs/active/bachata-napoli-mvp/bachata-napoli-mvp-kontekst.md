@@ -1,8 +1,8 @@
 # Bachata Napoli MVP — kontekst wykonawczy
 
 **Branch:** `feature/bachata-napoli-mvp`
-**Ostatnia aktualizacja:** 2026-05-30 (Faza 5 done — IU-10 + IU-11 + IU-12)
-**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ + Faza 5 ✅ ukończone; następna: /dev-docs-review Fazy 5
+**Ostatnia aktualizacja:** 2026-05-30 (review Fazy 5 — 0 P1, 12 P2, 14 P3)
+**Status:** active — Faza 1 ✅ + Faza 2 ✅ + Faza 3 ✅ + Faza 4 ✅ + Faza 5 ✅ ukończone; review Fazy 5 gotowe; następna: naprawa P1+P2 z review-faza-5.md
 
 ## Powiązane pliki
 
@@ -248,6 +248,17 @@
 - **IU-12: Prerender skipped** — React 19 + React Router 7 `createBrowserRouter` + Vite 6 nie ma stabilnego pluginu prerender. SPA zachowany, JSON-LD i meta client-side. Wymaga osobnego IU lub SSR migration po launch.
 - **IU-12: Sentry Deno stub** — Supabase Deno 1.45.x nie wspiera @sentry/deno. Wrapper funkcjonalny (re-throw + console.error), bez dashboard reporting.
 - **IU-11: Treść prawna jako JSX** — react-markdown nie był w projekcie, dangerouslySetInnerHTML byłby over-engineering dla statycznych stron.
+
+### Review Fazy 5 (2026-05-30)
+
+`/dev-docs-review` — 5 agentów (security, performance, architecture+TS, test-coverage, E2E browser). **Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI** — 0× P1, 12× P2, 14× P3. Raport: `review-faza-5.md`. E2E: 7/7 PASS (Agent 5).
+
+- **P2 security:** `row_to_json` leakuje `user_id` właściciela do anon public view (P2-1), brak walidacji domeny `mediaUrl` w validate-meta-embed (P2-2), Meta status HTTP wycieka do klienta (P2-3).
+- **P2 arch/type:** martwy `abortRef` kod w `[token].tsx` (P2-4), `useIsMobile` zduplikowany po raz 3. (P2-5), `as SharedContent` cast bez type guard (P2-6), env vars niezadeklarowane w `ImportMetaEnv` (P2-7), `initAnalytics()` nigdy nie wywoływana — Plausible broken (P2-8).
+- **P2 perf:** `setTimeout` bez cleanup w ShareLinkRow (P2-9), błędny Sentry preconnect domain `o0.ingest.sentry.io` (P2-10).
+- **P2 testy:** brakujący test `target_not_found` w shareTokens.test.ts (P2-11), brak testów `withSentry` wrappera (P2-12).
+- **E2E PASS:** cookie banner ✓, /privacy ✓, /regulamin ✓, /contact ✓, footer linki ✓, /s/:token RevokedTokenView ✓, StructuredData JSON-LD ✓.
+- **Pozytywne:** RLS pattern wzorcowy, 192-bit token entropy, DOMPurify XSS guard, `FetchState` discriminated union, Plausible (cookieless), Sentry `beforeSend` maskuje PII.
 
 ### Blokery / TODO przeniesione dalej
 

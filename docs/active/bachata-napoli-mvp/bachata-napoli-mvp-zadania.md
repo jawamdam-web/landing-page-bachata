@@ -542,12 +542,12 @@
 - [x] Test: [Unit] Reload → `useCookieConsent` reads localStorage, returns prev decision *(PASS)*
 - [x] Test: [Unit] `CookieConsentBanner` nie renderuje się jeśli `analytics !== null` *(PASS — oba przypadki: true + false)*
 - [x] Test: [Unit] `CookieConsentBanner` renderuje się gdy `analytics === null` *(PASS)*
-- [ ] Test: [E2E] `/` w incognito → banner widoczny bottom screen *(odłożone)*
-- [ ] Test: [E2E] Klik "Tylko niezbędne" → banner znika; localStorage zawiera decision *(odłożone)*
+- [x] Test: [E2E] `/` w incognito → banner widoczny bottom screen *(PASS 2026-05-30: Agent 5 — banner z przyciskami "Zaakceptuj" + "Tylko niezbędne" widoczny)*
+- [ ] Test: [E2E] Klik "Tylko niezbędne" → banner znika; localStorage zawiera decision *(odłożone — wymaga ręcznego testu)*
 - [ ] Test: [E2E] Reload `/` → banner NIE pokazuje się *(odłożone)*
-- [ ] Test: [E2E] `/privacy` → renderuje sekcje z czytelnym typo (max-w-prose 672px) *(odłożone)*
-- [ ] Test: [E2E] `/regulamin` → renderuje *(odłożone)*
-- [ ] Test: [E2E] Footer ma działające linki do `/privacy`, `/regulamin`, `/contact` (no 404) *(odłożone)*
+- [x] Test: [E2E] `/privacy` → renderuje sekcje z czytelnym typo *(PASS 2026-05-30: Agent 5 — H1 + 10 sekcji H2, prose-legal layout)*
+- [x] Test: [E2E] `/regulamin` → renderuje *(PASS 2026-05-30: Agent 5 — H1 + 8 sekcji H2)*
+- [x] Test: [E2E] Footer ma działające linki do `/privacy`, `/regulamin`, `/contact` (no 404) *(PASS 2026-05-30: Agent 5 — 3 linki widoczne w footer nav)*
 - [ ] Test: [E2E] axe scan na privacy/regulamin pages → 0 violations *(odłożone)*
 
 **Weryfikacja:**
@@ -593,7 +593,7 @@
 - [ ] Test: [E2E] `bun run build` produkuje `dist/privacy/index.html` z prerendered content *(SKIPPED)*
 - [ ] Test: [E2E] sitemap.xml → valid XML z routes *(odłożone — po deployu staging)*
 - [ ] Test: [E2E] robots.txt → expected directives *(plik stworzony: `public/robots.txt` ✅)*
-- [ ] Test: [E2E] DevTools view source `/` → `<script type="application/ld+json">` z LocalBusiness *(client-side — widoczne po hydration, nie w view-source SPA shell)*
+- [x] Test: [E2E] DevTools view source `/` → `<script type="application/ld+json">` z LocalBusiness *(PASS 2026-05-30: Agent 5 — querySelectorAll potwierdził 1 element z WebSite schema JSON-LD)*
 - [ ] Test: [E2E] Sentry test — throw w komponencie staging → event w Sentry dashboard *(odłożone — wymaga VITE_SENTRY_DSN)*
 - [ ] Test: [E2E] Lighthouse `/` mobile: SEO score ≥ 95 *(odłożone — po deployu staging)*
 - [ ] Test: [E2E] Lighthouse `/privacy` mobile: SEO ≥ 95 *(odłożone)*
@@ -601,7 +601,7 @@
 **Weryfikacja:**
 - [ ] Weryfikacja: `bun run build` produkuje prerendered HTML dla 4 routes *(SKIPPED — SPA shell; structured data client-side)*
 - [x] Weryfikacja: `bun run typecheck` + `bun run test` zielone *(347/347 PASS 2026-05-30)*
-- [ ] Weryfikacja: `curl dist/sitemap.xml` → valid XML *(uruchom `bun run generate-sitemap` po buildzie → dist/sitemap.xml)*
+- [x] Weryfikacja: `curl dist/sitemap.xml` → valid XML *(PASS 2026-05-30: `bun run scripts/generate-sitemap.ts` → dist/sitemap.xml z 6 routes: /, /privacy, /regulamin, /contact, /signup, /login)*
 - [x] Weryfikacja: `public/robots.txt` istnieje z poprawnymi dyrektywami *(PASS)*
 - [ ] Weryfikacja: Lighthouse SEO score ≥ 95 dla landing po prerender *(odłożone — staging deploy)*
 
@@ -612,6 +612,48 @@
 - [ ] Operator: SSL cert provisioned (auto via hosting)
 - [ ] Operator: Google Search Console verification + sitemap submitted po publikacji
 - [ ] Operator: Test prod — rzeczywisty Sentry capture z prod environment (jeden test error)
+
+---
+
+## Do poprawy po review fazy 5
+
+> Severity gate: ⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI — 0× P1, 12× P2, 14× P3. Pełny raport: `review-faza-5.md`.
+
+**P2 — Security:**
+- [ ] 🟠 [important] **supabase/migrations/0005_share_tokens.sql:59–72** — `row_to_json(v)` leakuje `user_id` właściciela w publicznej odpowiedzi anon. Zamień na `jsonb_build_object` z wybrzonymi kolumnami (pomiń `user_id`).
+- [ ] 🟠 [important] **supabase/functions/validate-meta-embed/index.ts:106–118** — brak walidacji domeny `mediaUrl` przed przekazaniem do Meta API. Dodaj `if (!mediaUrl.startsWith(ALLOWED_DOMAINS[platform]))` guard.
+- [ ] 🟠 [important] **supabase/functions/validate-meta-embed/index.ts:148–155** — HTTP status Meta API wycieka do klienta (`Meta oEmbed returned ${status}`). Zamień na stały string `'Meta oEmbed API unavailable'`.
+
+**P2 — Architecture / Type Safety:**
+- [ ] 🟠 [important] **src/pages/s/[token].tsx:45–54** — martwy kod `abortRef` — `controller.signal` nigdy nieprzekazany do RPC. Usuń `abortRef` i `useRef` import; zostaw tylko `cancelled` flag.
+- [ ] 🟠 [important] **src/features/sharing/components/ShareDialog.tsx:47** — `useIsMobile` zduplikowany po raz 3. (AddVideoDialog + VideoDetailDialog + ShareDialog). Wyciągnij do `src/hooks/useIsMobile.ts` i zastąp wszystkie 3 importy.
+- [ ] 🟠 [important] **src/features/sharing/api/shareTokens.ts:173** — `as SharedContent` cast bez runtime type guard na granicy systemu (RPC zwraca `Json`). Dodaj `isSharedContent(v: unknown): v is SharedContent` type guard.
+- [ ] 🟠 [important] **src/vite-env.d.ts** — `VITE_SENTRY_DSN` i `VITE_PLAUSIBLE_DOMAIN` niezadeklarowane w `ImportMetaEnv`. Dodaj `readonly VITE_SENTRY_DSN?: string` i `readonly VITE_PLAUSIBLE_DOMAIN?: string`.
+- [ ] 🟠 [important] **src/lib/analytics.ts** — `initAnalytics()` eksportowana ale **nigdy nie wywoływana** — Plausible nie działa. W `CookieConsentBanner` po `acceptAll()` wywołaj `initAnalytics()`.
+
+**P2 — Performance:**
+- [ ] 🟠 [important] **src/features/sharing/components/ShareLinkRow.tsx:44** — `setTimeout` bez cleanup (§13 violation). Użyj `useRef<ReturnType<typeof setTimeout>>` + `useEffect` z `clearTimeout`.
+- [ ] 🟠 [important] **index.html:16** — `o0.ingest.sentry.io` w preconnect to placeholder. Usuń lub zaktualizuj po skonfigurowaniu prawdziwego Sentry DSN.
+
+**P2 — Test Coverage:**
+- [ ] 🟠 [important] **src/features/sharing/api/shareTokens.test.ts** — brakujący test `fetchSharedContent(tokenZdeletedVideo) → throws 'target_not_found'` (wymagany przez plan IU-10).
+- [ ] 🟠 [important] **supabase/functions/_shared/sentry.ts** — brak testów `withSentry` wrappera. Napisz test: (1) brak SENTRY_DSN → handler działa normalnie, (2) handler rzuca → error re-throwowany.
+
+**P3 — Nit (opcjonalne):**
+- [ ] 🟡 [nit] **supabase/migrations/0005_share_tokens.sql:8** — brak `CHECK (char_length(token) = 32)` na kolumnie `token`.
+- [ ] 🟡 [nit] **public/robots.txt:3–4** — `Disallow: /library` bez trailing slash. Zmień na `Disallow: /library/` i `Disallow: /settings/`.
+- [ ] 🟡 [nit] **src/lib/sentry.ts:22** — `console.warn` w produkcyjnym kodzie. Ogranicz do `if (import.meta.env.DEV)`.
+- [ ] 🟡 [nit] **src/features/sharing/hooks/useShareTokens.ts** + komponenty sharing — relative imports zamiast `@/features/sharing/...` aliasów.
+- [ ] 🟡 [nit] **src/features/sharing/components/SharedFolderView.tsx:24–31** — lokalny interface `SharedFolder` duplikuje `SharedFolderContent['folder']`. Zamień na `type SharedFolder = SharedFolderContent['folder']`.
+- [ ] 🟡 [nit] **src/features/sharing/components/ShareDialog.tsx:72,109** — `isRevoking` blokuje wszystkie przyciski "Cofnij" jednocześnie. Dodaj komentarz lub napraw przez `revokingId` state.
+- [ ] 🟡 [nit] **src/features/sharing/api/shareTokens.ts:138** — `listShareTokens` zwraca `select('*')`. Ogranicz do `select('id, token, created_at')`.
+- [ ] 🟡 [nit] **src/lib/sentry.ts:19** — brak sanity check formatu DSN przed `Sentry.init()`. Dodaj `if (!dsn || !dsn.startsWith('https://'))` guard.
+- [ ] 🟡 [nit] **supabase/functions/validate-meta-embed/index.ts** — brak `mediaUrl.length > 2048` check.
+- [ ] 🟡 [nit] **supabase/functions/fetch-youtube-metadata/index.ts:136** — `videoId` bez walidacji formatu `/^[A-Za-z0-9_-]{11}$/` (marnuje quota YT API przy garbage input).
+- [ ] 🟡 [nit] **src/features/legal/components/CookieConsentBanner.tsx:20** — `role="dialog"` bez `aria-modal="true"` i `aria-describedby`.
+- [ ] 🟡 [nit] **src/lib/sentry.test.ts** — brak negatywnej asercji "Sentry.init NIE wywołane gdy brak DSN".
+- [ ] 🟡 [nit] **src/features/sharing/api/shareTokens.test.ts** — test entropii tokenów testuje mock, nie faktyczną `generateToken()`.
+- [ ] 🟡 [nit] **src/features/sharing/components/ShareDialog.tsx:131** — `const title = \`Udostępnij: ${targetLabel}\`` tworzony przy każdym renderze; kandydat na `useMemo`.
 
 ---
 
